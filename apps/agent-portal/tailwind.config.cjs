@@ -8,30 +8,54 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                // Boby Brand Colors
-                boby: {
-                    primary: '#2563eb',
-                    secondary: '#1e40af',
-                    accent: '#3b82f6',
-                    gold: '#f59e0b',
-                    success: '#10b981',
-                    warning: '#f59e0b',
-                    danger: '#ef4444',
-                    dark: '#1f2937',
-                    light: '#f9fafb',
+                // ═══════════════════════════════════════════════════════════════
+                // BOBY BRAND COLORS - CANONICAL
+                // Gold/Black/White palette - DO NOT CHANGE
+                // ═══════════════════════════════════════════════════════════════
+
+                // Primary Brand
+                primary: {
+                    DEFAULT: '#FFD952',  // BOBY Gold - Main brand color
+                    dark: '#F2C94C',     // Hover states
+                    light: '#FEF3C7',    // Light backgrounds
                 },
-                // Trust Circle Colors
-                circle: {
-                    center: '#8b5cf6',
-                    inner: '#3b82f6',
-                    mid: '#10b981',
-                    outer: '#f59e0b',
-                    public: '#6b7280',
+
+                // Semantic Status
+                success: {
+                    DEFAULT: '#45BE5E',
+                    light: '#D1FAE5',
+                },
+                warning: '#F2994A',
+                danger: '#DC2626',
+                teal: {
+                    DEFAULT: '#1EFFBC',
+                    dark: '#0D9488',
+                },
+
+                // Neutral Palette
+                text: {
+                    primary: '#303030',    // Primary text - dark grey/black
+                    secondary: '#505050',
+                    muted: '#787878',
+                },
+                grey: {
+                    100: '#FAFAFA',
+                    200: '#F5F5F5',
+                    300: '#E0E0E0',
+                },
+
+                // Trust Tier Colors (5-tier system)
+                tier: {
+                    1: '#FFD952',  // Gold Star - Center Circle / Highest trust
+                    2: '#28A2FF',  // Blue Shield - Inner Circle
+                    3: '#45BE5E',  // Green Tick - Mid Circle
+                    4: '#F2994A',  // Amber - Outer Circle
+                    5: '#A0A0A0',  // Grey - Public Circle
                 },
             },
             fontFamily: {
                 sans: ['Inter', 'system-ui', 'sans-serif'],
-                display: ['Outfit', 'system-ui', 'sans-serif'],
+                display: ['Inter', 'system-ui', 'sans-serif'],
             },
             animation: {
                 'fade-in': 'fadeIn 0.2s ease-in-out',
@@ -46,10 +70,6 @@ module.exports = {
                     '0%': { opacity: '0', transform: 'translateY(10px)' },
                     '100%': { opacity: '1', transform: 'translateY(0)' },
                 },
-            },
-            boxShadow: {
-                'boby': '0 4px 14px 0 rgba(37, 99, 235, 0.15)',
-                'boby-lg': '0 10px 40px 0 rgba(37, 99, 235, 0.2)',
             },
         },
     },

@@ -35,22 +35,22 @@ const availableJobs = [
 
 export function JobsPage() {
     return (
-        <div className="page-container animate-fade-in">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-display font-bold text-gray-900">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
                         Available Jobs
                     </h1>
-                    <p className="text-gray-500 mt-1">
+                    <p className="text-text-muted mt-1">
                         Browse and apply for security positions
                     </p>
                 </div>
                 <Button variant="outline" size="sm">
-                    🗺️ Map View
+                    Map View
                 </Button>
             </div>
 
-            {/* Filters */}
+            {/* Filters - Text only buttons */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
                 <Button variant="primary" size="sm">All Jobs</Button>
                 <Button variant="ghost" size="sm">Door Security</Button>
@@ -59,32 +59,33 @@ export function JobsPage() {
                 <Button variant="ghost" size="sm">Crowd Control</Button>
             </div>
 
-            {/* Job listings */}
+            {/* Job listings - Typography focused, 2-letter markers */}
             <div className="space-y-4">
                 {availableJobs.map((job) => (
                     <Card key={job.id} variant="default" padding="none" className="overflow-hidden">
                         <CardContent className="p-4 sm:p-6">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex items-start gap-4">
-                                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-boby-primary to-boby-accent flex items-center justify-center text-white text-2xl shrink-0">
-                                        🏢
+                                    {/* 2-letter marker instead of icon */}
+                                    <div className="w-12 h-12 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                                        <span className="text-sm font-bold text-text-primary">JB</span>
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="font-semibold text-gray-900">{job.title}</h3>
+                                            <h3 className="font-semibold text-text-primary">{job.title}</h3>
                                             <CircleBadge level={job.circle} size="sm" />
                                         </div>
-                                        <p className="text-gray-600">{job.venue}</p>
-                                        <p className="text-sm text-gray-500">{job.location}</p>
+                                        <p className="text-text-secondary">{job.venue}</p>
+                                        <p className="text-sm text-text-muted">{job.location}</p>
                                     </div>
                                 </div>
                                 <div className="flex flex-col sm:items-end gap-2">
                                     <div className="text-right">
-                                        <p className="font-semibold text-gray-900">{job.date}</p>
-                                        <p className="text-sm text-gray-500">{job.time}</p>
+                                        <p className="font-semibold text-text-primary">{job.date}</p>
+                                        <p className="text-sm text-text-muted">{job.time}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <span className="text-lg font-bold text-boby-success">{job.pay}</span>
+                                        <span className="text-lg font-bold text-success">{job.pay}</span>
                                         <Button variant="primary" size="sm">Apply</Button>
                                     </div>
                                 </div>

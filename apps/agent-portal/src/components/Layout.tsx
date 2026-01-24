@@ -2,31 +2,35 @@ import { Outlet, NavLink } from 'react-router-dom';
 import { cn } from '@boby/ui';
 
 const navigation = [
-    { name: 'Dashboard', href: '/', icon: '🏠' },
-    { name: 'Jobs', href: '/jobs', icon: '💼' },
-    { name: 'Earnings', href: '/earnings', icon: '💰' },
-    { name: 'Profile', href: '/profile', icon: '👤' },
+    { name: 'Dashboard', href: '/' },
+    { name: 'Jobs', href: '/jobs' },
+    { name: 'Earnings', href: '/earnings' },
+    { name: 'Profile', href: '/profile' },
 ];
 
 export function Layout() {
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-grey-100">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <header className="bg-white border-b border-grey-300 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        {/* Logo */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl">🛡️</span>
-                            <span className="font-display font-bold text-xl text-boby-primary">
-                                Boby
-                            </span>
-                            <span className="text-sm text-gray-500 hidden sm:inline">
-                                Agent Portal
-                            </span>
+                        {/* Logo - Text wordmark with gold accent */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-primary flex items-center justify-center">
+                                <span className="text-xs font-bold text-text-primary">B</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="font-bold text-lg text-text-primary leading-tight">
+                                    BOBY
+                                </span>
+                                <span className="text-xs text-text-muted leading-tight">
+                                    Agent Portal
+                                </span>
+                            </div>
                         </div>
 
-                        {/* Desktop Navigation */}
+                        {/* Desktop Navigation - Text only, no icons */}
                         <nav className="hidden md:flex items-center gap-1">
                             {navigation.map((item) => (
                                 <NavLink
@@ -36,32 +40,28 @@ export function Layout() {
                                         cn(
                                             'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                                             isActive
-                                                ? 'bg-boby-primary/10 text-boby-primary'
-                                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                                ? 'bg-primary/20 text-text-primary border-b-2 border-primary'
+                                                : 'text-text-secondary hover:bg-grey-200 hover:text-text-primary'
                                         )
                                     }
                                 >
-                                    <span className="mr-2">{item.icon}</span>
                                     {item.name}
                                 </NavLink>
                             ))}
                         </nav>
 
-                        {/* User menu placeholder */}
+                        {/* User menu - 2-letter marker instead of icon */}
                         <div className="flex items-center gap-4">
-                            <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                                🔔
-                            </button>
-                            <div className="w-8 h-8 rounded-full bg-boby-primary/20 flex items-center justify-center text-boby-primary font-medium">
-                                A
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+                                <span className="text-xs font-bold text-text-primary">AG</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
 
-            {/* Mobile Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
+            {/* Mobile Navigation - Text only at bottom */}
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-grey-300 z-50">
                 <div className="flex justify-around">
                     {navigation.map((item) => (
                         <NavLink
@@ -69,14 +69,13 @@ export function Layout() {
                             to={item.href}
                             className={({ isActive }) =>
                                 cn(
-                                    'flex flex-col items-center py-2 px-3 text-xs font-medium transition-colors',
+                                    'flex flex-col items-center py-3 px-3 text-xs font-medium transition-colors flex-1',
                                     isActive
-                                        ? 'text-boby-primary'
-                                        : 'text-gray-500 hover:text-gray-900'
+                                        ? 'text-text-primary border-t-2 border-primary bg-primary/10'
+                                        : 'text-text-muted hover:text-text-primary'
                                 )
                             }
                         >
-                            <span className="text-xl mb-1">{item.icon}</span>
                             {item.name}
                         </NavLink>
                     ))}

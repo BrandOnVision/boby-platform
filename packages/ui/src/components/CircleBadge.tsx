@@ -12,12 +12,13 @@ export interface CircleBadgeProps extends React.HTMLAttributes<HTMLSpanElement> 
     showLabel?: boolean;
 }
 
+// Trust tier colors from brand standards
 const circleColors: Record<CircleLevel, string> = {
-    center: 'bg-circle-center/20 text-circle-center border-circle-center',
-    inner: 'bg-circle-inner/20 text-circle-inner border-circle-inner',
-    mid: 'bg-circle-mid/20 text-circle-mid border-circle-mid',
-    outer: 'bg-circle-outer/20 text-circle-outer border-circle-outer',
-    public: 'bg-circle-public/20 text-circle-public border-circle-public',
+    center: 'bg-tier-1/20 text-tier-1 border-tier-1',   // Gold - Highest trust
+    inner: 'bg-tier-2/20 text-tier-2 border-tier-2',    // Blue
+    mid: 'bg-tier-3/20 text-tier-3 border-tier-3',      // Green
+    outer: 'bg-tier-4/20 text-tier-4 border-tier-4',    // Amber
+    public: 'bg-tier-5/20 text-tier-5 border-tier-5',   // Grey
 };
 
 const circleLabels: Record<CircleLevel, string> = {
@@ -28,6 +29,15 @@ const circleLabels: Record<CircleLevel, string> = {
     public: 'Public',
 };
 
+// 2-letter markers instead of colored dots (brand standard)
+const circleMarkers: Record<CircleLevel, string> = {
+    center: 'C1',
+    inner: 'C2',
+    mid: 'C3',
+    outer: 'C4',
+    public: 'C5',
+};
+
 const sizeStyles = {
     sm: 'text-xs px-2 py-0.5',
     md: 'text-sm px-2.5 py-1',
@@ -36,6 +46,7 @@ const sizeStyles = {
 
 /**
  * Circle badge component for displaying trust levels
+ * Uses 5-tier color system from brand standards
  * 
  * @example
  * <CircleBadge level="inner" showLabel />
@@ -46,21 +57,15 @@ export const CircleBadge = React.forwardRef<HTMLSpanElement, CircleBadgeProps>(
             <span
                 ref={ref}
                 className={cn(
-                    'inline-flex items-center font-medium rounded-full border',
+                    'inline-flex items-center font-medium rounded border',
                     circleColors[level],
                     sizeStyles[size],
                     className
                 )}
                 {...props}
             >
-                <span className={cn(
-                    'w-2 h-2 rounded-full mr-1.5',
-                    level === 'center' && 'bg-circle-center',
-                    level === 'inner' && 'bg-circle-inner',
-                    level === 'mid' && 'bg-circle-mid',
-                    level === 'outer' && 'bg-circle-outer',
-                    level === 'public' && 'bg-circle-public'
-                )} />
+                {/* 2-letter marker instead of colored dot */}
+                <span className="font-bold mr-1.5">{circleMarkers[level]}</span>
                 {showLabel && circleLabels[level]}
             </span>
         );

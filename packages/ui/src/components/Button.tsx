@@ -10,18 +10,19 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
     isLoading?: boolean;
     /** Full width button */
     fullWidth?: boolean;
-    /** Left icon */
-    leftIcon?: React.ReactNode;
-    /** Right icon */
-    rightIcon?: React.ReactNode;
 }
 
 const variantStyles = {
-    primary: 'bg-boby-primary text-white hover:bg-boby-secondary shadow-boby focus:ring-boby-primary/50',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500/50',
-    outline: 'border-2 border-boby-primary text-boby-primary hover:bg-boby-primary/10 focus:ring-boby-primary/50',
-    ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:ring-gray-500/50',
-    danger: 'bg-boby-danger text-white hover:bg-red-600 focus:ring-red-500/50',
+    // Primary: Gold background, dark text (BOBY brand standard)
+    primary: 'bg-primary text-text-primary hover:bg-primary-dark focus:ring-primary/50 font-semibold',
+    // Secondary: Grey background
+    secondary: 'bg-grey-200 text-text-primary hover:bg-grey-300 focus:ring-grey-300/50',
+    // Outline: Gold border
+    outline: 'border-2 border-primary text-text-primary hover:bg-primary/10 focus:ring-primary/50',
+    // Ghost: Text only
+    ghost: 'text-text-secondary hover:bg-grey-100 hover:text-text-primary focus:ring-grey-300/50',
+    // Danger: Red for destructive actions
+    danger: 'bg-danger text-white hover:bg-red-700 focus:ring-danger/50',
 };
 
 const sizeStyles = {
@@ -32,10 +33,12 @@ const sizeStyles = {
 
 /**
  * Primary button component for the Boby design system
+ * Uses GOLD (#FFD952) as primary brand color
+ * NO EMOJI ICONS - text only
  * 
  * @example
  * <Button variant="primary" onClick={() => {}}>
- *   Get Started
+ *   Save Changes
  * </Button>
  */
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -46,8 +49,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             size = 'md',
             isLoading = false,
             fullWidth = false,
-            leftIcon,
-            rightIcon,
             disabled,
             children,
             ...props
@@ -96,9 +97,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                         />
                     </svg>
                 )}
-                {leftIcon && !isLoading && <span className="mr-2">{leftIcon}</span>}
                 {children}
-                {rightIcon && <span className="ml-2">{rightIcon}</span>}
             </button>
         );
     }
