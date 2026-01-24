@@ -32,6 +32,59 @@
 3. **Type-Safe Contracts** - TypeScript interfaces define boundaries
 4. **Offline-Ready** - Mobile-first, sync-second architecture
 5. **Brand Consistent** - One design system, enforced everywhere
+6. **Identity-Centric** - Wardrobe/Filing Cabinet/Briefcase are core infrastructure
+
+---
+
+## 🗄️ Identity Infrastructure Overview
+
+These core identity systems are already designed in the database schema. The new platform will fully realize them in the UI.
+
+### The Three Pillars
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         PEELER (The Person)                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   👔 WARDROBE                 📋 BRIEFCASE               🗄️ FILING CABINET  │
+│   What they carry             Portable identity          Access control     │
+│   ├── Hats (Roles)            ├── TelePathCode           ├── Drawers        │
+│   ├── Belts (Certs)           ├── Credentials            │   (Public,       │
+│   ├── Shoes (Mobility)        └── Trust Score            │    Members,      │
+│   └── Keys (Access)                                      │    Staff, etc.)  │
+│                                                          └── Folders        │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Database Tables (Already Exist)
+
+| Table | Purpose | Status |
+|-------|---------|--------|
+| `peeler_wardrobe` | Hats, Belts, Shoes | ✅ Schema exists |
+| `peeler_keys` | Special access grants | ✅ Schema exists |
+| `boby_place_drawers` | Major access segments | ✅ Schema exists |
+| `boby_place_folders` | Granular permissions | ✅ Schema exists |
+
+### UI Components Needed
+
+| Component | Package | Phase |
+|-----------|---------|-------|
+| WardrobeDisplay | @boby/ui | Phase 0 |
+| BriefcaseCard | @boby/ui | Phase 0 |
+| DrawerNav | @boby/ui | Phase 5 |
+| FolderGrid | @boby/ui | Phase 5 |
+| HatBadge | @boby/ui | Phase 1 |
+| BeltBadge | @boby/ui | Phase 1 |
+| KeyStatus | @boby/ui | Phase 5 |
+
+### Hooks Needed
+
+| Hook | Package | Purpose |
+|------|---------|--------|
+| `useWardrobe` | @boby/auth | Get user's hats/belts/shoes/keys |
+| `useAccess` | @boby/auth | Check drawer/folder permissions |
+| `useBriefcase` | @boby/auth | Get portable identity info |
 
 ---
 
@@ -81,9 +134,10 @@ Current: 4 components | Target: 15 components
 | **EmptyState** | P2 | 🔄 TODO | No data displays |
 | **ErrorBoundary** | P2 | 🔄 TODO | Error handling |
 
-### 0.3 @boby/auth (Authentication)
-Shared authentication logic for all apps.
+### 0.3 @boby/auth (Authentication + Identity)
+Shared authentication AND identity infrastructure for all apps.
 
+#### Core Auth
 | Task | Priority | Status |
 |------|----------|--------|
 | AuthProvider context | P0 | 🔄 TODO |
@@ -94,6 +148,27 @@ Shared authentication logic for all apps.
 | SSO with existing system | P1 | 🔄 TODO |
 | Refresh token logic | P1 | 🔄 TODO |
 | Logout/cleanup | P1 | 🔄 TODO |
+
+#### 👔 Wardrobe Hooks
+| Hook | Priority | Status | Description |
+|------|----------|--------|-------------|
+| `useWardrobe` | P1 | 🔄 TODO | Get user's hats, belts, shoes, keys |
+| `useHats` | P1 | 🔄 TODO | User's roles (Agent, Manager, etc.) |
+| `useBelts` | P1 | 🔄 TODO | User's certifications (RSA, First Aid) |
+| `useKeys` | P2 | 🔄 TODO | Special access grants |
+
+#### 🗄️ Filing Cabinet Hooks
+| Hook | Priority | Status | Description |
+|------|----------|--------|-------------|
+| `useAccess` | P1 | 🔄 TODO | Check drawer/folder permissions |
+| `useDrawers` | P2 | 🔄 TODO | List available drawers for a place |
+| `useFolders` | P2 | 🔄 TODO | List folders within a drawer |
+
+#### 📋 Briefcase Hooks
+| Hook | Priority | Status | Description |
+|------|----------|--------|-------------|
+| `useBriefcase` | P1 | 🔄 TODO | Get portable identity package |
+| `useTelePathCode` | P1 | 🔄 TODO | Scannable identity code |
 
 ### 0.4 @boby/api-client (API Layer)
 Type-safe API client for all backend calls.
@@ -151,8 +226,18 @@ Complete the Agent Portal as the FIRST production app using the foundation.
 | Job Detail | `/jobs/:id` | 🔄 TODO | Full job info, map, apply |
 | Earnings | `/earnings` | ✅ UI Done | Summary, history table |
 | Profile | `/profile` | ✅ UI Done | Info, credentials |
+| **Credentials** | `/credentials` | 🔄 TODO | **Belts display (RSA, First Aid, etc.)** |
 | Settings | `/settings` | 🔄 TODO | Preferences, notifications |
 | Notifications | `/notifications` | 🔄 TODO | Activity feed |
+
+### 1.3 Wardrobe Integration (Agent Portal)
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Display Belts on Profile | Show certifications (RSA, First Aid, Crowd Control) | 🔄 TODO |
+| Display Hat on Dashboard | Show current role (Security Agent, etc.) | 🔄 TODO |
+| Credential Upload | Add new Belts to wardrobe | 🔄 TODO |
+| Trust Score from Briefcase | Show portable trust rating | 🔄 TODO |
 
 ### 1.3 Features
 
@@ -222,9 +307,22 @@ packages/ui/
 | Login | P0 | 🔄 TODO |
 | Dashboard | P0 | 🔄 TODO |
 | **Panic Button** | P0 | 🔄 TODO |
+| **Briefcase** | P0 | 🔄 TODO |
 | Jobs List | P1 | 🔄 TODO |
 | Profile | P1 | 🔄 TODO |
 | Settings | P2 | 🔄 TODO |
+
+### 2.4 Briefcase Screen (Mobile Identity)
+
+The Briefcase is the **portable identity** screen - critical for mobile.
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| TelePathCode QR | Scannable identity code | 🔄 TODO |
+| Verified Credentials | Digital wallet of Belts | 🔄 TODO |
+| Trust Score Display | Portable reputation | 🔄 TODO |
+| Share Identity | NFC/QR share to venues | 🔄 TODO |
+| Offline Mode | Cached credentials work offline | 🔄 TODO |
 
 ### 2.4 Panic Button Feature (CRITICAL)
 
@@ -331,7 +429,7 @@ apps/firm-portal/
 ## 👥 Phase 5: Member Portal Migration (Week 7-10)
 
 ### Goal
-Migrate the existing membership-portal.html to React.
+Migrate the existing membership-portal.html to React, including FULL Filing Cabinet implementation.
 
 ### 5.1 Strategy
 1. Create feature parity first
@@ -347,12 +445,34 @@ Migrate the existing membership-portal.html to React.
 | Dashboard/Home | 7 | P0 |
 | Profile Management | 8 | P0 |
 | MeMe Identity Hub | 8 | P0 |
+| **Wardrobe Management** | 8 | P0 |
 | Jobs/Applications | 9 | P1 |
 | Earnings/Payments | 9 | P1 |
+| **Filing Cabinet UI** | 9 | P1 |
 | Settings | 10 | P2 |
 | Recruitment Tools | 10 | P2 |
 
-### 5.3 Deployment
+### 5.3 Filing Cabinet Full Implementation
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Drawer Navigation | Visual drawer selector | 🔄 TODO |
+| Folder Grid | Browse folders within drawer | 🔄 TODO |
+| Access Visualization | Show what user can/can't access | 🔄 TODO |
+| Key Management | View/request special access keys | 🔄 TODO |
+| Circle → Folder Migration | Map legacy circles to folders | 🔄 TODO |
+
+### 5.4 Wardrobe Full Implementation
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Hat Selector | Switch active roles | 🔄 TODO |
+| Belt Gallery | View all certifications | 🔄 TODO |
+| Belt Upload | Add new certifications | 🔄 TODO |
+| Shoes Configuration | Set mobility/availability | 🔄 TODO |
+| Key Ring | View all access grants | 🔄 TODO |
+
+### 5.5 Deployment
 - URL: members.getboby.ai (replaces existing)
 
 ---
@@ -387,7 +507,7 @@ Refactor the monolithic server.js into clean microservices.
 ## 🚀 Phase 7: Full Launch (Week 13+)
 
 ### Goal
-Complete platform with all portals running on new architecture.
+Complete platform with all portals running on new architecture, including Kaksos migration.
 
 ### 7.1 Final Deliverables
 
@@ -396,14 +516,39 @@ Complete platform with all portals running on new architecture.
 | Agent Portal | agents.getboby.ai |
 | Firm Portal | firms.getboby.ai |
 | Member Portal | members.getboby.ai |
+| **Kaksos Portal** | kaksos.getboby.ai |
 | Mobile App (iOS) | App Store |
 | Mobile App (Android) | Play Store |
 | API Gateway | api.getboby.ai |
 
-### 7.2 Legacy Deprecation
+### 7.2 Kaksos Dashboard Migration
+
+The Kaksos Dashboard is the most complex migration due to AI integration.
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Know Me Know You (KMKY) | Dialogue training system | 🔄 Phase 7 |
+| Living Memory | Memory-NAC architecture | 🔄 Phase 7 |
+| Watch Grow | Training data visualization | 🔄 Phase 7 |
+| Test Kaksos | AI conversation testing | 🔄 Phase 7 |
+| Soul Architecture | AI personality engine | 🔄 Phase 7 |
+
+### 7.3 Legacy Deprecation
 - Sunset membership-portal.html
+- Sunset kaksos-dashboard.html
 - Archive boby-kaksos-demo-1 repository
 - Redirect old URLs to new
+
+### 7.4 Identity Infrastructure Complete
+
+By Phase 7, all identity systems are fully realized:
+
+| System | Status |
+|--------|--------|
+| Wardrobe (Hats/Belts/Shoes/Keys) | ✅ Full UI across all portals |
+| Filing Cabinet (Drawers/Folders) | ✅ Full access control UI |
+| Briefcase (Portable ID) | ✅ Mobile + Web display |
+| TelePathCode | ✅ Scannable identity everywhere |
 
 ---
 
