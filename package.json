@@ -1,0 +1,35 @@
+{
+    "name": "boby-platform",
+    "version": "0.1.0",
+    "private": true,
+    "description": "Boby Platform Monorepo - React + TypeScript + React Native",
+    "keywords": [
+        "boby",
+        "security",
+        "kaksos",
+        "agents"
+    ],
+    "license": "UNLICENSED",
+    "author": "Boby Team",
+    "scripts": {
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "lint": "turbo run lint",
+        "test": "turbo run test",
+        "clean": "turbo run clean && rimraf node_modules",
+        "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+        "typecheck": "turbo run typecheck"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "prettier": "^3.2.0",
+        "rimraf": "^5.0.5",
+        "turbo": "^2.0.0",
+        "typescript": "^5.3.0"
+    },
+    "packageManager": "pnpm@8.15.0",
+    "engines": {
+        "node": ">=18.0.0",
+        "pnpm": ">=8.0.0"
+    }
+}
