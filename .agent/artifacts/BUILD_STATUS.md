@@ -1,8 +1,8 @@
 # 🏗️ Boby Platform Build Status
 
-> **Last Updated:** 2026-01-24 13:06 AEST  
+> **Last Updated:** 2026-01-24 13:18 AEST  
 > **Current Phase:** Phase 0 - Foundation (Week 1)  
-> **Current Task:** Complete @boby/ui components (P0)  
+> **Current Task:** Complete @boby/api-client  
 > **Beta Launch Target:** February 14, 2026  
 > **Roadmap:** See `DEVELOPMENT_ROADMAP.md` for full plan
 
@@ -15,9 +15,10 @@
 | Package | P0 Components | Status |
 |---------|---------------|--------|
 | @boby/ui | Button, Card, Input, CircleBadge | ✅ Done |
-| @boby/ui | Marker, Select, Modal, Toast | 🔄 Next |
-| @boby/auth | AuthProvider, useAuth, useUser | 🔄 Pending |
-| @boby/api-client | Base client, types | 🔄 Pending |
+| @boby/ui | Marker, Select, Modal, Toast | ✅ Done |
+| @boby/auth | AuthProvider, useAuth, useUser | ✅ Done |
+| @boby/auth | useWardrobe, useBriefcase, useAccess | ✅ Done |
+| @boby/api-client | Base client, types | 🔄 Next |
 
 ---
 
@@ -26,9 +27,9 @@
 | App/Package | Status | Progress | Blockers |
 |-------------|--------|----------|----------|
 | `@boby/config` | ✅ Complete | 100% | None |
-| `@boby/ui` | 🟡 In Progress | 60% | Needs more components |
-| `@boby/api-client` | 🔴 Not Started | 0% | Waiting on API design |
-| `@boby/auth` | 🔴 Not Started | 0% | - |
+| `@boby/ui` | ✅ P0 Complete | 80% | P1 components remaining |
+| `@boby/auth` | ✅ P0 Complete | 70% | Needs API integration |
+| `@boby/api-client` | 🔴 Not Started | 0% | Next priority |
 | `agent-portal` | 🟢 UI Verified | 60% | Needs API integration |
 | `mobile` (Panic Button) | 🔴 Not Started | 0% | - |
 

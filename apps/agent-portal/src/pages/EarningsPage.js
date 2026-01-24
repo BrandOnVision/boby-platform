@@ -1,0 +1,20 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Card, CardContent, CardTitle } from '@boby/ui';
+const earningsData = {
+    thisWeek: '$840',
+    thisMonth: '$2,480',
+    pending: '$320',
+    lifetime: '$18,450',
+};
+const recentPayments = [
+    { id: 1, venue: 'The Grand Hotel', date: 'Jan 20', hours: 8, amount: '$360', status: 'Paid' },
+    { id: 2, venue: 'Metro Club', date: 'Jan 18', hours: 7, amount: '$315', status: 'Paid' },
+    { id: 3, venue: 'Riverside Events', date: 'Jan 15', hours: 6, amount: '$252', status: 'Paid' },
+    { id: 4, venue: 'The Grand Hotel', date: 'Jan 22', hours: 8, amount: '$320', status: 'Pending' },
+];
+export function EarningsPage() {
+    return (_jsxs("div", { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in", children: [_jsxs("div", { className: "mb-8", children: [_jsx("h1", { className: "text-2xl sm:text-3xl font-bold text-text-primary", children: "Earnings" }), _jsx("p", { className: "text-text-muted mt-1", children: "Track your income and payment history" })] }), _jsxs("div", { className: "grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8", children: [_jsx(Card, { variant: "elevated", padding: "md", className: "bg-primary border-none", children: _jsxs(CardContent, { children: [_jsx("p", { className: "text-sm text-text-primary/70 mb-1", children: "This Week" }), _jsx("p", { className: "text-3xl font-bold text-text-primary", children: earningsData.thisWeek })] }) }), _jsx(Card, { variant: "elevated", padding: "md", children: _jsxs(CardContent, { children: [_jsx("p", { className: "text-sm text-text-muted mb-1", children: "This Month" }), _jsx("p", { className: "text-3xl font-bold text-text-primary", children: earningsData.thisMonth })] }) }), _jsx(Card, { variant: "elevated", padding: "md", children: _jsxs(CardContent, { children: [_jsx("p", { className: "text-sm text-text-muted mb-1", children: "Pending" }), _jsx("p", { className: "text-3xl font-bold text-warning", children: earningsData.pending })] }) }), _jsx(Card, { variant: "elevated", padding: "md", children: _jsxs(CardContent, { children: [_jsx("p", { className: "text-sm text-text-muted mb-1", children: "Lifetime" }), _jsx("p", { className: "text-3xl font-bold text-success", children: earningsData.lifetime })] }) })] }), _jsxs(Card, { variant: "default", padding: "lg", children: [_jsx(CardTitle, { className: "mb-6", children: "Payment History" }), _jsx("div", { className: "overflow-x-auto", children: _jsxs("table", { className: "w-full", children: [_jsx("thead", { children: _jsxs("tr", { className: "border-b border-grey-300", children: [_jsx("th", { className: "text-left py-3 px-4 text-sm font-medium text-text-muted", children: "Venue" }), _jsx("th", { className: "text-left py-3 px-4 text-sm font-medium text-text-muted", children: "Date" }), _jsx("th", { className: "text-left py-3 px-4 text-sm font-medium text-text-muted", children: "Hours" }), _jsx("th", { className: "text-left py-3 px-4 text-sm font-medium text-text-muted", children: "Amount" }), _jsx("th", { className: "text-left py-3 px-4 text-sm font-medium text-text-muted", children: "Status" })] }) }), _jsx("tbody", { children: recentPayments.map((payment) => (_jsxs("tr", { className: "border-b border-grey-200 hover:bg-grey-100", children: [_jsx("td", { className: "py-4 px-4 font-medium text-text-primary", children: payment.venue }), _jsx("td", { className: "py-4 px-4 text-text-secondary", children: payment.date }), _jsxs("td", { className: "py-4 px-4 text-text-secondary", children: [payment.hours, "h"] }), _jsx("td", { className: "py-4 px-4 font-semibold text-text-primary", children: payment.amount }), _jsx("td", { className: "py-4 px-4", children: _jsx("span", { className: `inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${payment.status === 'Paid'
+                                                        ? 'bg-success/10 text-success'
+                                                        : 'bg-warning/10 text-warning'}`, children: payment.status }) })] }, payment.id))) })] }) })] })] }));
+}
+//# sourceMappingURL=EarningsPage.js.map
