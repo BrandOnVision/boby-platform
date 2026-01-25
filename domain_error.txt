@@ -1,0 +1,23 @@
+﻿python.exe : ERROR: (gcloud.beta.run.domain-mappings.create) HttpError accessing <https://austra
+lia-southeast1-run.googleapis.com/apis/domains.cloudrun.com/v1/namespaces/boby-ecosystem/domainm
+appings?alt=json>: response: <{'vary': 'Origin, X-Origin, Referer', 'content-type': 
+'application/json; charset=UTF-8', 'content-encoding': 'gzip', 'date': 'Sat, 24 Jan 2026 
+09:24:49 GMT', 'server': 'ESF', 'x-xss-protection': '0', 'x-frame-options': 'SAMEORIGIN', 
+'x-content-type-options': 'nosniff', 'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; 
+ma=2592000', 'transfer-encoding': 'chunked', 'status': 501}>, content <{
+At C:\Users\brand\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1:114 char:3
++   & "$cloudsdk_python" $run_args_array
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERROR: (gcloud....1}>, content <{:String) [], Remo 
+   teException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  "error": {
+    "code": 501,
+    "message": "Creating domain mappings is not allowed in australia-southeast1.",
+    "status": "UNIMPLEMENTED"
+  }
+}
+>
+This may be due to network connectivity issues. Please check your network settings, and the 
+status of the service you are trying to reach.

@@ -125,11 +125,58 @@ Use bold 2-letter abbreviations inside styled containers:
 
 ---
 
-## Logo Usage
+## 🚨 MANDATORY: Official Logo Assets
 
-- **Header**: `/boby-logo-text.png` (with text fallback "BOBY")
-- **Favicon**: `/boby-logo-sq.png`
-- **Mobile**: Max height 28px
+**ALL new pages and portals MUST use the official logo files from the onset.**
+
+### Official Asset Files
+
+| Asset | Filename | Location | Use Case |
+|-------|----------|----------|----------|
+| **Square Logo (Favicon)** | `logosq.png` | `/public/logosq.png` | Browser favicon, app icons, square contexts |
+| **Full Logo (Horizontal)** | `Bobylogo.png` | `/public/Bobylogo.png` | Headers, splash screens, login pages |
+
+### Visual Reference
+
+- **logosq**: Gold sergeant chevron badge icon (circle with downward chevrons)
+- **Bobylogo**: Full horizontal logo with badge + "BOBY" gold text
+
+### Implementation (MANDATORY on every new app)
+
+```html
+<!-- index.html - Favicon (REQUIRED) -->
+<link rel="icon" type="image/png" href="/logosq.png" />
+<link rel="apple-touch-icon" href="/logosq.png" />
+
+<!-- Header Component - Full Logo -->
+<img src="/Bobylogo.png" alt="BOBY" className="h-8" />
+
+<!-- Mobile Header - Square Logo -->
+<img src="/logosq.png" alt="BOBY" className="h-7 w-7" />
+```
+
+### Sizing Standards
+
+| Context | Asset | Recommended Size |
+|---------|-------|------------------|
+| Favicon | logosq | 32x32, 180x180 (apple-touch) |
+| Mobile header | logosq | 28px height |
+| Desktop header | Bobylogo | 32-40px height |
+| Login page | Bobylogo | 48-64px height |
+| Splash/Loading | Bobylogo | 80-120px height |
+
+### ❌ DO NOT
+
+- Create new placeholder logos (use official assets)
+- Use CSS-only "B" letters as logo substitutes
+- Modify the logo colors (gold #FFD952 is fixed)
+- Reference logos from external URLs
+
+### ✅ ALWAYS
+
+- Copy logosq.png and Bobylogo.png to `/public/` when creating new apps
+- Set favicon in index.html immediately when scaffolding
+- Use img tags with proper alt text
 
 ---
 

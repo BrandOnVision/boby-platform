@@ -3,8 +3,47 @@
 > **Tech Lead:** AI Assistant  
 > **Product Owner/UX:** Brand (User)  
 > **Created:** January 24, 2026  
+> **Last Updated:** January 24, 2026  
 > **Beta Launch Target:** February 14, 2026  
 > **Full Launch Target:** March 2026
+
+---
+
+## 📋 Session Progress Log
+
+### January 24, 2026 - Agent Portal Foundation Complete
+
+**Major Accomplishments:**
+- ✅ **Authentication Flow** - Full JWT auth via `/api/membership/login`, protected routes, logout
+- ✅ **Sidebar Layout** - Desktop sidebar with 2-letter markers, mobile slide-out navigation
+- ✅ **Brand Standards** - White/crisp styling (NOT dark), invitation-only protocol on login
+- ✅ **PostgreSQL Integration** - Cloud SQL Auth Proxy configured, all pages use production PostgreSQL
+- ✅ **All Core Pages** - Login, Dashboard, Jobs, Earnings, Profile fully functional with real API data
+- ✅ **MeMe Identity Vault** - Profile integrates with peelers table (single source of truth)
+- ✅ **Staging Deployment** - Live at `staging-agents.getboby.ai` via Cloud Run + Cloudflare Worker
+
+**Deployment Infrastructure:**
+
+| URL | Status |
+|-----|--------|
+| `https://staging-agents.getboby.ai` | ✅ **LIVE** (Custom Domain) |
+| `https://agent-portal-staging-oybrjgfxzq-ts.a.run.app` | ✅ Working (Direct) |
+
+**Critical Standards Established:**
+- 🚫 NO SQLite - Ever, not even for local development
+- 🚫 NO Header Tabs - Sidebar pattern only for all portals
+- 🚫 NO Dark Backgrounds - White/crisp brand identity
+- 🚫 NO Bottom Nav on Mobile - Slide-out sidebar only
+- ✅ PostgreSQL ONLY with Cloud SQL Auth Proxy for local dev
+- ✅ Peeler First Protocol - Single identity across all portals
+- ✅ Cloudflare Worker for custom domains (australia-southeast1 doesn't support Cloud Run domain mappings)
+
+**Remaining for Phase 1:**
+- [ ] Job application flow
+- [ ] Job detail page (`/jobs/:id`)
+- [ ] Credentials/Belts display
+- [ ] Settings page
+- [x] ~~Staging deployment~~ ✅ COMPLETED
 
 ---
 
@@ -33,6 +72,129 @@
 4. **Offline-Ready** - Mobile-first, sync-second architecture
 5. **Brand Consistent** - One design system, enforced everywhere
 6. **Identity-Centric** - Wardrobe/Filing Cabinet/Briefcase are core infrastructure
+
+---
+
+## 🎨 Critical Development Standards
+
+### Layout Pattern: Sidebar (NOT Header Tabs)
+
+**ALL portals MUST use the sidebar navigation pattern** to maintain consistency with the existing membership portal:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  ┌─────────┐  ┌────────────────────────────────────────┐ │
+│  │ SIDEBAR │  │                                        │ │
+│  │         │  │           MAIN CONTENT                 │ │
+│  │ Logo    │  │                                        │ │
+│  │ Nav     │  │   Full width on mobile                 │ │
+│  │ User    │  │   Flexible grid on desktop             │ │
+│  │         │  │                                        │ │
+│  └─────────┘  └────────────────────────────────────────┘ │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Implementation Requirements:**
+- Desktop (lg+): Fixed sidebar on left, content on right
+- Tablet (md): Collapsible sidebar with hamburger menu
+- Mobile: Hidden sidebar, bottom navigation bar + hamburger for full menu
+
+### Mobile-First Responsiveness
+
+**EVERY component and page MUST be built mobile-first:**
+
+1. **Full-Width by Default** - Content uses 100% of available screen width
+2. **No Side Gutters on Mobile** - Remove excessive padding that wastes screen space
+3. **Bottom Navigation** - Fixed bottom nav for primary routes on mobile
+4. **Touch-Friendly** - All interactive elements minimum 44px touch target
+5. **Safe Area Insets** - Account for notches and home indicators
+6. **Overflow Handling** - Tables/wide content use horizontal scroll with visible indicators
+
+```css
+/* Standard responsive breakpoints */
+/* Mobile first, then scale up */
+@screen sm { /* 640px+ */ }
+@screen md { /* 768px+ */ }
+@screen lg { /* 1024px - Sidebar appears */ }
+@screen xl { /* 1280px+ */ }
+```
+
+### 🚨 MANDATORY: Official Logo Assets
+
+**ALL new apps MUST include official logo assets from DAY ONE - no placeholders.**
+
+| Asset | Filename | Purpose |
+|-------|----------|---------|
+| **logosq.png** | Square badge icon | Favicon, app icons, mobile headers |
+| **Bobylogo.png** | Full horizontal logo | Desktop headers, login pages, splash screens |
+
+**When scaffolding ANY new app:**
+
+1. Copy `logosq.png` and `Bobylogo.png` to `/public/` immediately
+2. Set favicon in `index.html` before writing any code:
+   ```html
+   <link rel="icon" type="image/png" href="/logosq.png" />
+   ```
+3. Use actual logo images in components - no CSS "B" letter substitutes
+
+**See BRAND_STYLE_GUIDE.md for complete sizing and usage standards.**
+
+### Invitation-Only Protocol
+
+**BOBY uses an invitation-only access model** - there is NO public registration:
+
+| Portal | Who Can Invite | Requirements |
+|--------|---------------|--------------|
+| **Firm Portal** | BOBY Admin Only | Must be approved security firm |
+| **Agent Portal** | Firms or Team Leaders | Must have valid invitation code |
+| **Member Portal** | Self-registration via TelePathCode scan | Public limited access |
+
+**Login Page Copy:**
+- ❌ WRONG: "Don't have an account? Join BOBY"
+- ✅ RIGHT: "Have an invitation? Activate Account"
+- ✅ INCLUDE: "BOBY Special Agents are by invitation only"
+
+### Peeler First Protocol
+
+**ALL users are Peelers first** - unified identity across all portals:
+
+1. Single Sign-On across all Boby applications
+2. Credentials stored in MeMe Identity Vault
+3. Roles (Hats) determine portal access level
+4. TelePathCode is the universal identity token
+
+### Database Standard: PostgreSQL ONLY
+
+**⚠️ CRITICAL: ALL development MUST use PostgreSQL** - NO SQLite, even for local development.
+
+**Why This Matters:**
+The Boby platform previously suffered significant migration pain when moving from SQLite to PostgreSQL. Different SQL dialects, type systems, and behaviors caused bugs that only appeared in production. This is now a **hard rule**.
+
+| Issue | SQLite | PostgreSQL | Result |
+|-------|--------|------------|--------|
+| UUID Handling | TEXT | Native UUID | Casting errors |
+| Type System | Dynamic | Strict | Hidden bugs |
+| Date Functions | `datetime('now')` | `NOW()` | Query failures |
+| JSON Operations | `json_extract()` | `->`, `->>` | Syntax errors |
+| Concurrency | File locks | MVCC | Deadlocks |
+
+**Development Database Options:**
+1. **Direct Cloud SQL** - Connect to staging/production PostgreSQL (recommended)
+2. **Docker PostgreSQL** - `docker run -p 5432:5432 postgres`
+3. **Local PostgreSQL** - Native installation
+
+**Environment Variables Required:**
+```bash
+DATABASE_URL=postgresql://user:pass@host:5432/boby_db
+```
+
+**Verification Checklist:**
+- [ ] Server startup shows `✓ Database: Connected (PostgreSQL)` NOT `(SQLite)`
+- [ ] All queries use PostgreSQL syntax
+- [ ] UUID columns use `uuid` type, not `text`
+- [ ] Date operations use `NOW()`, `CURRENT_TIMESTAMP`
 
 ---
 
@@ -212,21 +374,24 @@ Complete the Agent Portal as the FIRST production app using the foundation.
 ### 1.1 Layout & Navigation
 | Task | Status |
 |------|--------|
-| Responsive header | ✅ Done |
-| Mobile bottom nav | ✅ Done |
-| Sidebar (desktop) | 🔄 TODO |
+| Sidebar (desktop) | ✅ Done (Jan 24) |
+| Mobile bottom nav | ✅ Done (Jan 24) |
+| Mobile hamburger menu | ✅ Done (Jan 24) |
+| User section with logout | ✅ Done (Jan 24) |
+| White/crisp brand styling | ✅ Done (Jan 24) |
 | Breadcrumbs | 🔄 TODO |
 
 ### 1.2 Pages
 
 | Page | Route | Status | Features |
 |------|-------|--------|----------|
-| Dashboard | `/` | ✅ UI Done | Stats, shifts, quick actions |
-| Jobs | `/jobs` | ✅ UI Done | Listings, filters, apply |
+| Login | `/login` | ✅ Done (Jan 24) | JWT auth, invitation-only copy |
+| Dashboard | `/` | ✅ Done (Jan 24) | Stats, shifts, quick actions |
+| Jobs | `/jobs` | ✅ Done (Jan 24) | Real PostgreSQL data, filters |
 | Job Detail | `/jobs/:id` | 🔄 TODO | Full job info, map, apply |
-| Earnings | `/earnings` | ✅ UI Done | Summary, history table |
-| Profile | `/profile` | ✅ UI Done | Info, credentials |
-| **Credentials** | `/credentials` | 🔄 TODO | **Belts display (RSA, First Aid, etc.)** |
+| Earnings | `/earnings` | ✅ Done (Jan 24) | Summary cards, payment history |
+| Profile | `/profile` | ✅ Done (Jan 24) | Agent ID, credentials display |
+| **Credentials** | `/credentials` | 🔄 TODO | **Belts display (RSA, First Aid)** |
 | Settings | `/settings` | 🔄 TODO | Preferences, notifications |
 | Notifications | `/notifications` | 🔄 TODO | Activity feed |
 
@@ -243,30 +408,34 @@ Complete the Agent Portal as the FIRST production app using the foundation.
 
 | Feature | Priority | Status |
 |---------|----------|--------|
-| Login with existing credentials | P0 | 🔄 TODO |
-| View available jobs | P0 | ✅ UI Done |
+| Login with existing credentials | P0 | ✅ Done (Jan 24) - JWT auth via /api/membership/login |
+| Protected routes redirect to login | P0 | ✅ Done (Jan 24) - ProtectedRoute component |
+| Logout functionality | P0 | ✅ Done (Jan 24) - Clears token, redirects |
+| View available jobs | P0 | ✅ Done (Jan 24) - Real PostgreSQL data |
 | Apply for jobs | P0 | 🔄 TODO |
-| View earnings | P0 | ✅ UI Done |
-| Update profile | P0 | 🔄 TODO |
+| View earnings | P0 | ✅ Done (Jan 24) - Summary cards, payment history |
+| View profile | P0 | ✅ Done (Jan 24) - Agent ID, credentials display |
+| Update profile | P0 | 🔄 TODO - API connected, UI needs form |
 | Upload credentials | P1 | 🔄 TODO |
 | Push notifications | P2 | 🔄 TODO |
 
 ### 1.4 API Integration
 
-| Endpoint | Method | Status |
-|----------|--------|--------|
-| GET /api/agent/profile | Read | 🔄 TODO |
-| PUT /api/agent/profile | Update | 🔄 TODO |
-| GET /api/jobs | List | 🔄 TODO |
-| GET /api/jobs/:id | Detail | 🔄 TODO |
-| POST /api/jobs/:id/apply | Action | 🔄 TODO |
-| GET /api/agent/earnings | Read | 🔄 TODO |
-| GET /api/agent/shifts | Read | 🔄 TODO |
+| Endpoint | Method | Status | Notes |
+|----------|--------|--------|-------|
+| POST /api/membership/login | Auth | ✅ Done | JWT token returned |
+| GET /api/membership/verify | Auth | ✅ Done | Session validation |
+| PUT /api/membership/profile | Update | ✅ Done | MeMe Identity Vault |
+| GET /api/jobs | List | ✅ Done | PostgreSQL, filters work |
+| GET /api/jobs/:id | Detail | 🔄 TODO | |
+| POST /api/jobs/:id/apply | Action | 🔄 TODO | |
+| GET /api/commissions/agent/:id | Read | ✅ Done | Earnings API |
+| GET /api/agent/shifts | Read | 🔄 TODO | |
 
 ### Phase 1 Checkpoint ✓
 Before moving to Phase 2:
-- [ ] Agent can log in with existing credentials
-- [ ] All pages render with real data
+- [x] Agent can log in with existing credentials ✅ (Jan 24)
+- [x] All pages render with real data ✅ (Jan 24 - PostgreSQL connected)
 - [ ] Job application flow complete
 - [ ] Deployed to staging (staging-agents.getboby.ai)
 - [ ] Tech Lead approval

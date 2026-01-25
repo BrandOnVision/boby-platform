@@ -13,6 +13,8 @@
         "clean": "rimraf dist"
     },
     "dependencies": {
+        "@boby/api-client": "workspace:*",
+        "@boby/auth": "workspace:*",
         "@boby/ui": "workspace:*",
         "@tanstack/react-query": "^5.17.0",
         "react": "^18.2.0",

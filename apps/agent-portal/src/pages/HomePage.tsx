@@ -1,25 +1,60 @@
+/**
+ * Agent Portal Dashboard - Home Page
+ * 
+ * Shows agent stats, upcoming shifts, and quick actions
+ * Uses API hooks to fetch real data from the server
+ * Brand-compliant: Gold accents, 2-letter markers, no emojis
+ */
+
 import { Button, Card, CardContent, CardTitle } from '@boby/ui';
-
-const stats = [
-    { label: 'Active Jobs', value: '3', change: '+1 this week' },
-    { label: 'Hours This Week', value: '24', change: '6 remaining' },
-    { label: 'Earnings (MTD)', value: '$2,480', change: '+12% vs last month' },
-    { label: 'Trust Score', value: '94', change: '+2 points' },
-];
-
-const upcomingShifts = [
-    { id: 1, venue: 'The Grand Hotel', date: 'Today', time: '6:00 PM - 2:00 AM', role: 'Door Security' },
-    { id: 2, venue: 'Riverside Events', date: 'Tomorrow', time: '4:00 PM - 12:00 AM', role: 'Event Security' },
-    { id: 3, venue: 'Metro Club', date: 'Sat, Jan 25', time: '9:00 PM - 4:00 AM', role: 'Crowd Control' },
-];
+import { useAuth } from '../context/AuthContext';
+import { useJobs, useEarnings, formatCurrency } from '../hooks/useApi';
 
 export function HomePage() {
+    const { user } = useAuth();
+    const { data: jobsData, isLoading: jobsLoading } = useJobs({ limit: 5 });
+    const { data: earningsData, isLoading: earningsLoading } = useEarnings();
+
+    // Build stats from API data
+    const stats = [
+        {
+            label: 'Available Jobs',
+            value: jobsLoading ? '...' : String(jobsData?.total || 0),
+            change: 'Active listings'
+        },
+        {
+            label: 'Hours This Week',
+            value: '24', // TODO: Fetch from shifts API
+            change: '6 remaining'
+        },
+        {
+            label: 'Earnings (MTD)',
+            value: earningsLoading ? '...' : formatCurrency(earningsData?.total_earned || 0),
+            change: `${formatCurrency(earningsData?.this_week || 0)} this week`
+        },
+        {
+            label: 'Trust Score',
+            value: '94', // TODO: Fetch from profile
+            change: '+2 points'
+        },
+    ];
+
+    // Get display name from user
+    const displayName = user?.firstName || user?.email?.split('@')[0] || 'Agent';
+
+    // Mock shifts - TODO: Replace with API call
+    const upcomingShifts = [
+        { id: 1, venue: 'The Grand Hotel', date: 'Today', time: '6:00 PM - 2:00 AM', role: 'Door Security' },
+        { id: 2, venue: 'Riverside Events', date: 'Tomorrow', time: '4:00 PM - 12:00 AM', role: 'Event Security' },
+        { id: 3, venue: 'Metro Club', date: 'Sat, Jan 25', time: '9:00 PM - 4:00 AM', role: 'Crowd Control' },
+    ];
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
             {/* Welcome section - Typography only */}
             <div className="mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
-                    Welcome back, <span className="text-primary-dark">Agent</span>
+                    Welcome back, <span className="text-primary-dark">{displayName}</span>
                 </h1>
                 <p className="text-text-muted mt-1">
                     Here's what's happening with your shifts today.
@@ -48,27 +83,31 @@ export function HomePage() {
                     </Button>
                 </div>
                 <div className="space-y-3">
-                    {upcomingShifts.map((shift) => (
-                        <div
-                            key={shift.id}
-                            className="flex items-center justify-between p-4 rounded-lg bg-grey-100 hover:bg-grey-200 transition-colors"
-                        >
-                            <div className="flex items-center gap-4">
-                                {/* 2-letter marker instead of emoji */}
-                                <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                                    <span className="text-xs font-bold text-text-primary">VN</span>
+                    {upcomingShifts.length === 0 ? (
+                        <p className="text-text-muted text-center py-8">No upcoming shifts scheduled</p>
+                    ) : (
+                        upcomingShifts.map((shift) => (
+                            <div
+                                key={shift.id}
+                                className="flex items-center justify-between p-4 rounded-lg bg-grey-100 hover:bg-grey-200 transition-colors"
+                            >
+                                <div className="flex items-center gap-4">
+                                    {/* 2-letter marker instead of emoji */}
+                                    <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                                        <span className="text-xs font-bold text-text-primary">VN</span>
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-text-primary">{shift.venue}</p>
+                                        <p className="text-sm text-text-muted">{shift.role}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="font-medium text-text-primary">{shift.venue}</p>
-                                    <p className="text-sm text-text-muted">{shift.role}</p>
+                                <div className="text-right">
+                                    <p className="font-medium text-text-primary">{shift.date}</p>
+                                    <p className="text-sm text-text-muted">{shift.time}</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className="font-medium text-text-primary">{shift.date}</p>
-                                <p className="text-sm text-text-muted">{shift.time}</p>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
             </Card>
 

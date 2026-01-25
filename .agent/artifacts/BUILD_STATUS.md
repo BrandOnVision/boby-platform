@@ -177,9 +177,20 @@ boby-platform/
 | Environment | URL | Last Deploy | Status |
 |-------------|-----|-------------|--------|
 | Production (Agent) | `agents.getboby.ai` | - | 🔴 Not deployed |
-| Staging (Agent) | `staging-agents.getboby.ai` | - | 🔴 Not deployed |
+| **Staging (Agent)** | `staging-agents.getboby.ai` | **Jan 24, 2026** | ✅ **LIVE** |
+| Staging (Direct) | `agent-portal-staging-oybrjgfxzq-ts.a.run.app` | Jan 24, 2026 | ✅ Working |
 | Mobile (iOS) | App Store | - | 🔴 Not submitted |
 | Mobile (Android) | Play Store | - | 🔴 Not submitted |
+
+### Staging Infrastructure
+
+| Component | Details |
+|-----------|---------|
+| **Cloud Run Service** | `agent-portal-staging` in `australia-southeast1` |
+| **Custom Domain** | Via Cloudflare Worker (`staging-agents-proxy`) |
+| **Worker URL** | `staging-agents-proxy.bobyassistantoffice.workers.dev` |
+
+> ⚠️ **Note:** Cloud Run domain mappings are **not available** in `australia-southeast1`. Custom domains must use Cloudflare Worker proxy (see DEPLOYMENT_GUIDE.md).
 
 ---
 

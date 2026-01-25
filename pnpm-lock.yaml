@@ -26,6 +26,12 @@ importers:
 
   apps/agent-portal:
     dependencies:
+      '@boby/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
+      '@boby/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@boby/ui':
         specifier: workspace:*
         version: link:../../packages/ui
