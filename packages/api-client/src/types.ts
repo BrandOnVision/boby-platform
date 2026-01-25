@@ -195,3 +195,83 @@ export interface PanicAlertRequest {
     message?: string;
     audioUrl?: string;
 }
+
+// ============================================================================
+// Firm Types (Added Jan 25, 2026)
+// ============================================================================
+
+export interface Firm {
+    id: string;
+    name: string;
+    slug: string;
+    masterLicenceNumber?: string;
+    licenceClass1: boolean;
+    licenceClass2: boolean;
+    contactName?: string;
+    contactEmail: string;
+    contactPhone?: string;
+    status: 'active' | 'inactive' | 'pending';
+    subscriptionStatus: 'active' | 'past_due' | 'cancelled' | 'trial';
+    subscriptionExpiresAt?: string;
+    stripeConnectId?: string;
+    stripeConnectStatus?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface JobEnquiry {
+    id: string;
+    jobId: string;
+    enquirerType: 'agent' | 'firm' | 'member';
+    enquirerId: string;
+    enquirerName?: string;
+    enquirerEmail?: string;
+    message?: string;
+    status: 'pending' | 'accepted' | 'rejected' | 'assigned' | 'withdrawn';
+    appliedAt: string;
+    respondedAt?: string;
+    assignedAt?: string;
+}
+
+export interface FirmStats {
+    totalJobs: number;
+    activeJobs: number;
+    filledJobs: number;
+    pendingApplications: number;
+    totalAgentsLinked: number;
+    monthlyRevenue: number;
+}
+
+// Firm Request/Response Types
+export interface CreateJobRequest {
+    title: string;
+    description: string;
+    jobType: string;
+    locationCity: string;
+    locationState: string;
+    locationCountry?: string;
+    payType?: 'hourly' | 'fixed' | 'negotiable';
+    payMin?: number;
+    payMax?: number;
+    requiresLicence?: boolean;
+    requiresInsurance?: boolean;
+    minRankLevel?: number;
+    isUrgent?: boolean;
+    isFeatured?: boolean;
+}
+
+export interface UpdateJobRequest extends Partial<CreateJobRequest> {
+    status?: 'open' | 'filled' | 'closed' | 'cancelled';
+}
+
+export interface AssignAgentRequest {
+    jobId: string;
+    enquiryId: string;
+    agentId: string;
+    message?: string;
+}
+
+export interface UpdateEnquiryStatusRequest {
+    status: 'accepted' | 'rejected';
+    message?: string;
+}

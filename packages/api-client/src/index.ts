@@ -9,6 +9,7 @@ export {
     shiftsApi,
     earningsApi,
     emergencyApi,
+    firmApi,
 } from './endpoints';
 
 // Types
@@ -26,6 +27,10 @@ export type {
     Shift,
     Earning,
     Venue,
+    // Firm Types (Added Jan 25, 2026)
+    Firm,
+    FirmStats,
+    JobEnquiry,
     // Request/Response types
     LoginRequest,
     LoginResponse,
@@ -34,6 +39,11 @@ export type {
     CheckInRequest,
     CheckOutRequest,
     PanicAlertRequest,
+    // Firm Request/Response types
+    CreateJobRequest,
+    UpdateJobRequest,
+    AssignAgentRequest,
+    UpdateEnquiryStatusRequest,
 } from './types';
 
 // ============================================================================
@@ -48,6 +58,7 @@ import {
     shiftsApi,
     earningsApi,
     emergencyApi,
+    firmApi,
 } from './endpoints';
 
 export interface BobyApi {
@@ -58,6 +69,7 @@ export interface BobyApi {
     shifts: ReturnType<typeof shiftsApi>;
     earnings: ReturnType<typeof earningsApi>;
     emergency: ReturnType<typeof emergencyApi>;
+    firm: ReturnType<typeof firmApi>;
 }
 
 /**
@@ -80,6 +92,12 @@ export interface BobyApi {
  * 
  * // Send panic alert
  * await api.emergency.panic({ latitude: -27.4705, longitude: 153.0260 });
+ * 
+ * // Firm: Post a job
+ * const newJob = await api.firm.createJob({ title: 'Security Guard', ... });
+ * 
+ * // Firm: Get applications
+ * const apps = await api.firm.getJobEnquiries('job-id');
  */
 export function createBobyApi(config: ApiClientConfig): BobyApi {
     const client = new ApiClient(config);
@@ -92,5 +110,6 @@ export function createBobyApi(config: ApiClientConfig): BobyApi {
         shifts: shiftsApi(client),
         earnings: earningsApi(client),
         emergency: emergencyApi(client),
+        firm: firmApi(client),
     };
 }

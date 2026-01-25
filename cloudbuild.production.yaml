@@ -1,0 +1,35 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/agent-portal:production', '-f', 'apps/agent-portal/Dockerfile', '.']
+
+  # Push the container image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/agent-portal:production']
+
+  # Deploy container to Cloud Run (PRODUCTION)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'agent-portal'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/agent-portal:production'
+      - '--region'
+      - 'australia-southeast1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '256Mi'
+      - '--set-env-vars'
+      - 'NODE_ENV=production'
+
+images:
+  - 'gcr.io/$PROJECT_ID/agent-portal:production'
+
+# Usage:
+# Deploy to production: gcloud builds submit --config=cloudbuild.production.yaml --project boby-ecosystem
+# 
+# Production URL: agents.getboby.ai

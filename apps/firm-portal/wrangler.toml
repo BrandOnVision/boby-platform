@@ -1,0 +1,23 @@
+name = "firm-portal"
+main = "dist/_worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = "./dist"
+
+[env.staging]
+name = "staging-firm-portal"
+routes = [
+    { pattern = "staging-firms.getboby.ai/*", zone_name = "getboby.ai" }
+]
+
+[env.production]
+name = "firm-portal"
+routes = [
+    { pattern = "firms.getboby.ai/*", zone_name = "getboby.ai" }
+]
+
+# Build settings for static assets
+[build]
+command = "pnpm run build"

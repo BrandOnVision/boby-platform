@@ -3,13 +3,95 @@
 > **Tech Lead:** AI Assistant  
 > **Product Owner/UX:** Brand (User)  
 > **Created:** January 24, 2026  
-> **Last Updated:** January 24, 2026  
-> **Beta Launch Target:** February 14, 2026  
+> **Last Updated:** January 25, 2026  
+> **Beta Launch Target:** February 2026  
 > **Full Launch Target:** March 2026
+
+## 🎯 Strategic Goals
+
+| Priority | Goal | How |
+|----------|------|-----|
+| **A** | Prove concept with real users | Deploy firms.getboby.ai, test complete workflow |
+| **B** | Generate income to relieve shift work | Firm subscriptions ($360/year) + agent placements |
+| **C** | Full-time development from app income | Scale user base, automated revenue |
+
+## 📚 Key Documents
+
+| Document | Purpose |
+|----------|---------|
+| [PLATFORM_ARCHITECTURE.md](./PLATFORM_ARCHITECTURE.md) | Subdomain structure, Filing Cabinet routing, Kaksos pattern |
+| [DNS_SETUP_PLAN.md](./DNS_SETUP_PLAN.md) | All URLs, Coming Soon setup, Cloudflare Workers |
+| [BRAND_STYLE_GUIDE.md](./BRAND_STYLE_GUIDE.md) | Logo usage, colors, typography |
+| [BUILD_STATUS.md](./BUILD_STATUS.md) | Current build status and issues |
 
 ---
 
 ## 📋 Session Progress Log
+
+### January 25, 2026 (Evening) - Firm Portal Development Started 🏢
+
+**Major Accomplishments:**
+- ✅ **Firm Portal Created** - New Vite React app with TypeScript
+- ✅ **Authentication Flow** - Login via `/api/membership/login`, firm linking via `/api/partners/user-firm`
+- ✅ **Layout & Navigation** - Sidebar with BOBY branding, amber accent color for Firm Portal
+- ✅ **Dashboard Page** - Shows firm info, stats, quick actions
+- ✅ **Jobs Management** - List firm's jobs with status filters (Active/Filled/Closed)
+- ✅ **Post New Job** - Full job creation form with all fields, posts to `/api/jobs`
+- ✅ **Applications Page** - View enquiries/applications for posted jobs
+- ✅ **Settings Page** - Account info, firm details, notification preferences
+- ✅ **API Integration** - Full integration with existing jobs API (`poster_type: 'firm'`)
+- ✅ **Job Flow Verified** - Posted test job visible in both Firm Portal AND public jobs page
+- ✅ **Server Bug Fix** - Fixed `email` → `contact_email` in `/api/partners/user-firm` endpoint
+
+**Deployment Status:**
+
+| URL | Service | Status |
+|-----|---------|--------|
+| `https://master.firm-portal.pages.dev` | Firm Portal | ✅ **LIVE** |
+| `https://firms.getboby.ai` | Custom Domain | ⚠️ **Needs Config** |
+
+**Technical Notes:**
+- Uses Cloudflare Pages for hosting (same as agent-portal pattern)
+- Jobs posted as `poster_type: 'firm'` with firm/user ID
+- Filter logic shows only jobs posted by the logged-in firm
+- Fallback for `firm_owner` role users who don't have a partner_firm record
+
+**TODO (Next Session):**
+- [ ] Configure `firms.getboby.ai` custom domain in Cloudflare Pages
+- [ ] Create real BOBY firm record in partner_firms table
+- [ ] Test complete job flow: Post → Apply → Review → Hire
+
+---
+
+### January 25, 2026 - Phase 1 COMPLETE! Agent Portal Production Live 🎉
+
+**Major Accomplishments:**
+- ✅ **Jobs Page Enhanced** - Search bar, location/job type filters, urgent/featured quick filters, sort options
+- ✅ **Job Detail Page** - Full job info with apply functionality (`/jobs/:slug`)
+- ✅ **My Applications Page** - Track submitted applications with status
+- ✅ **Earnings Enhanced** - Date range filter, earnings chart, CSV export functionality
+- ✅ **Settings Page** - Notification preferences, privacy settings, working toggle switches
+- ✅ **PWA Support** - Manifest.json, standalone mode, Install button visible
+- ✅ **Fixed UI Issues** - Hamburger icon visibility, removed footer nav, fixed toggle switches
+- ✅ **Backend Endpoint** - Added `GET /api/jobs/my-applications` for application tracking
+- ✅ **Production Deployment** - Live at `agents.getboby.ai` via Cloud Run + Cloudflare Workers
+
+**Production Infrastructure (All Working):**
+
+| URL | Service | Status |
+|-----|---------|--------|
+| `https://agents.getboby.ai` | Agent Portal | ✅ **LIVE** |
+| `https://api.getboby.ai` | Production API | ✅ **LIVE** |
+| `https://staging-agents.getboby.ai` | Staging Portal | ✅ **LIVE** |
+| `https://staging-api.getboby.ai` | Staging API | ✅ **LIVE** |
+
+**Cloudflare Workers Configured:**
+- `agents-proxy` → Cloud Run `agent-portal`
+- `api-proxy` → Cloud Run `boby-unified`
+- `staging-api-proxy` → Cloud Run `boby-unified`
+- `staging-agents-proxy` → Cloud Run `agent-portal-staging`
+
+---
 
 ### January 24, 2026 - Agent Portal Foundation Complete
 
@@ -22,13 +104,6 @@
 - ✅ **MeMe Identity Vault** - Profile integrates with peelers table (single source of truth)
 - ✅ **Staging Deployment** - Live at `staging-agents.getboby.ai` via Cloud Run + Cloudflare Worker
 
-**Deployment Infrastructure:**
-
-| URL | Status |
-|-----|--------|
-| `https://staging-agents.getboby.ai` | ✅ **LIVE** (Custom Domain) |
-| `https://agent-portal-staging-oybrjgfxzq-ts.a.run.app` | ✅ Working (Direct) |
-
 **Critical Standards Established:**
 - 🚫 NO SQLite - Ever, not even for local development
 - 🚫 NO Header Tabs - Sidebar pattern only for all portals
@@ -37,13 +112,6 @@
 - ✅ PostgreSQL ONLY with Cloud SQL Auth Proxy for local dev
 - ✅ Peeler First Protocol - Single identity across all portals
 - ✅ Cloudflare Worker for custom domains (australia-southeast1 doesn't support Cloud Run domain mappings)
-
-**Remaining for Phase 1:**
-- [ ] Job application flow
-- [ ] Job detail page (`/jobs/:id`)
-- [ ] Credentials/Belts display
-- [ ] Settings page
-- [x] ~~Staging deployment~~ ✅ COMPLETED
 
 ---
 
@@ -250,18 +318,41 @@ These core identity systems are already designed in the database schema. The new
 
 ---
 
-## 🎯 Phase Overview
+## 🎯 Phase Overview (Revised Jan 25, 2026)
 
-| Phase | Name | Duration | Focus | Deliverable |
-|-------|------|----------|-------|-------------|
-| **0** | Foundation | Week 1 | Core packages | Shared infrastructure |
-| **1** | Agent Portal | Week 2 | First app | agents.getboby.ai |
-| **2** | Mobile Foundation | Week 3 | React Native | Panic Button app |
-| **3** | Beta Polish | Week 4 | Integration | Feb 14 Beta Launch |
-| **4** | Firm Portal | Week 5-6 | Second app | firms.getboby.ai |
-| **5** | Member Portal | Week 7-10 | Migration | members.getboby.ai |
-| **6** | API Gateway | Week 11-12 | Backend | Unified API layer |
-| **7** | Full Launch | Week 13+ | Production | Complete platform |
+### Strategy: Complete Core Platform First for Beta Testing
+
+**Beta V1 Scope:** Agent Portal + Firm Portal = Complete job workflow for testing
+
+**Test Users Ready:**
+- 1 Security Firm (active testing)
+- 1 Special Agent (active testing)
+- 1 Additional test case waiting to join
+
+| Phase | Name | Duration | Focus | Deliverable | Status |
+|-------|------|----------|-------|-------------|--------|
+| **0** | Foundation | Week 1 | Core packages | Shared infrastructure | ✅ Partial |
+| **1** | Agent Portal | Week 2 | First app | agents.getboby.ai | ✅ **COMPLETE** |
+| **2** | Firm Portal | Week 3-4 | Second app | firms.getboby.ai | � **IN PROGRESS** |
+| **3** | Beta V1 Polish | Week 4-5 | Integration | Feb Beta Launch | ⏳ Pending |
+| **4** | Mobile Foundation | Week 6+ | React Native | Panic Button app | 📱 Deferred |
+| **5** | Member Portal | Week 7-10 | Migration | members.getboby.ai | ⏳ Pending |
+| **6** | API Gateway | Week 11-12 | Backend | Unified API layer | ⏳ Pending |
+| **7** | Full Launch | Week 13+ | Production | Complete platform | ⏳ Pending |
+
+### Beta V1 Core Workflow (Target: Feb 14, 2026)
+
+```
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│   FIRM PORTAL    │    │   BOBY BACKEND   │    │  AGENT PORTAL    │
+│ firms.getboby.ai │    │  api.getboby.ai  │    │ agents.getboby.ai│
+├──────────────────┤    ├──────────────────┤    ├──────────────────┤
+│ 1. Post Job      │───▶│ Store in DB      │◀───│ 3. View Jobs     │
+│ 2. View Enquiries│◀───│ Match/Notify     │───▶│ 4. Apply (Enquiry)│
+│ 5. Assign Agent  │───▶│ Update Status    │◀───│ 6. Confirm Shift │
+│ 7. Verify Work   │◀───│ Track Earnings   │───▶│ 8. View Earnings │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+```
 
 ---
 
@@ -366,58 +457,53 @@ Before moving to Phase 1:
 
 ---
 
-## 🧑‍💼 Phase 1: Agent Portal (Week 2)
+## 🧑‍💼 Phase 1: Agent Portal (Week 2) ✅ COMPLETE
 
 ### Goal
 Complete the Agent Portal as the FIRST production app using the foundation.
+
+### Status: ✅ DEPLOYED TO PRODUCTION
+- **Production URL:** https://agents.getboby.ai
+- **Staging URL:** https://staging-agents.getboby.ai
 
 ### 1.1 Layout & Navigation
 | Task | Status |
 |------|--------|
 | Sidebar (desktop) | ✅ Done (Jan 24) |
-| Mobile bottom nav | ✅ Done (Jan 24) |
-| Mobile hamburger menu | ✅ Done (Jan 24) |
+| Mobile slide-out menu | ✅ Done (Jan 25) |
+| Mobile hamburger icon | ✅ Fixed (Jan 25) |
 | User section with logout | ✅ Done (Jan 24) |
 | White/crisp brand styling | ✅ Done (Jan 24) |
-| Breadcrumbs | 🔄 TODO |
+| PWA Manifest | ✅ Done (Jan 25) |
 
 ### 1.2 Pages
 
 | Page | Route | Status | Features |
 |------|-------|--------|----------|
-| Login | `/login` | ✅ Done (Jan 24) | JWT auth, invitation-only copy |
-| Dashboard | `/` | ✅ Done (Jan 24) | Stats, shifts, quick actions |
-| Jobs | `/jobs` | ✅ Done (Jan 24) | Real PostgreSQL data, filters |
-| Job Detail | `/jobs/:id` | 🔄 TODO | Full job info, map, apply |
-| Earnings | `/earnings` | ✅ Done (Jan 24) | Summary cards, payment history |
-| Profile | `/profile` | ✅ Done (Jan 24) | Agent ID, credentials display |
-| **Credentials** | `/credentials` | 🔄 TODO | **Belts display (RSA, First Aid)** |
-| Settings | `/settings` | 🔄 TODO | Preferences, notifications |
-| Notifications | `/notifications` | 🔄 TODO | Activity feed |
-
-### 1.3 Wardrobe Integration (Agent Portal)
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Display Belts on Profile | Show certifications (RSA, First Aid, Crowd Control) | 🔄 TODO |
-| Display Hat on Dashboard | Show current role (Security Agent, etc.) | 🔄 TODO |
-| Credential Upload | Add new Belts to wardrobe | 🔄 TODO |
-| Trust Score from Briefcase | Show portable trust rating | 🔄 TODO |
+| Login | `/login` | ✅ Done | JWT auth, invitation-only copy |
+| Dashboard | `/` | ✅ Done | Stats, shifts, quick actions |
+| Jobs | `/jobs` | ✅ Done | Search, filters, sort, urgent/featured |
+| Job Detail | `/jobs/:slug` | ✅ Done (Jan 25) | Full job info, apply button |
+| **My Applications** | `/applications` | ✅ Done (Jan 25) | Track submitted applications |
+| Earnings | `/earnings` | ✅ Done (Jan 25) | Date filter, chart, CSV export |
+| Profile | `/profile` | ✅ Done | Agent ID, credentials display |
+| Settings | `/settings` | ✅ Done (Jan 25) | Notifications, privacy, toggles |
 
 ### 1.3 Features
 
 | Feature | Priority | Status |
 |---------|----------|--------|
-| Login with existing credentials | P0 | ✅ Done (Jan 24) - JWT auth via /api/membership/login |
-| Protected routes redirect to login | P0 | ✅ Done (Jan 24) - ProtectedRoute component |
-| Logout functionality | P0 | ✅ Done (Jan 24) - Clears token, redirects |
-| View available jobs | P0 | ✅ Done (Jan 24) - Real PostgreSQL data |
-| Apply for jobs | P0 | 🔄 TODO |
-| View earnings | P0 | ✅ Done (Jan 24) - Summary cards, payment history |
-| View profile | P0 | ✅ Done (Jan 24) - Agent ID, credentials display |
-| Update profile | P0 | 🔄 TODO - API connected, UI needs form |
-| Upload credentials | P1 | 🔄 TODO |
-| Push notifications | P2 | 🔄 TODO |
+| Login with existing credentials | P0 | ✅ Done - JWT auth via /api/membership/login |
+| Protected routes redirect to login | P0 | ✅ Done - ProtectedRoute component |
+| Logout functionality | P0 | ✅ Done - Clears token, redirects |
+| View available jobs | P0 | ✅ Done - Real PostgreSQL data |
+| **Search & filter jobs** | P0 | ✅ Done (Jan 25) - Search, location, type, urgent |
+| **Apply for jobs** | P0 | ✅ Done (Jan 25) - Job enquiry endpoint |
+| **Track applications** | P0 | ✅ Done (Jan 25) - My Applications page |
+| View earnings | P0 | ✅ Done - Date filter, chart, CSV export |
+| View profile | P0 | ✅ Done - Agent ID, credentials display |
+| Upload credentials | P1 | 🔄 Phase 3 |
+| Push notifications | P2 | 🔄 Phase 3 |
 
 ### 1.4 API Integration
 
@@ -427,99 +513,152 @@ Complete the Agent Portal as the FIRST production app using the foundation.
 | GET /api/membership/verify | Auth | ✅ Done | Session validation |
 | PUT /api/membership/profile | Update | ✅ Done | MeMe Identity Vault |
 | GET /api/jobs | List | ✅ Done | PostgreSQL, filters work |
-| GET /api/jobs/:id | Detail | 🔄 TODO | |
-| POST /api/jobs/:id/apply | Action | 🔄 TODO | |
+| GET /api/jobs/:slug | Detail | ✅ Done (Jan 25) | SEO-friendly slugs |
+| POST /api/jobs/:id/enquire | Action | ✅ Done (Jan 25) | Job application |
+| GET /api/jobs/my-applications | List | ✅ Done (Jan 25) | Track applications |
 | GET /api/commissions/agent/:id | Read | ✅ Done | Earnings API |
-| GET /api/agent/shifts | Read | 🔄 TODO | |
 
-### Phase 1 Checkpoint ✓
-Before moving to Phase 2:
-- [x] Agent can log in with existing credentials ✅ (Jan 24)
-- [x] All pages render with real data ✅ (Jan 24 - PostgreSQL connected)
-- [ ] Job application flow complete
-- [ ] Deployed to staging (staging-agents.getboby.ai)
-- [ ] Tech Lead approval
-- [ ] UX approval on complete flows
+### Phase 1 Checkpoint ✓ COMPLETE
+- [x] Agent can log in with existing credentials ✅ 
+- [x] All pages render with real data ✅ 
+- [x] Job application flow complete ✅ (Jan 25)
+- [x] Deployed to production (agents.getboby.ai) ✅ (Jan 25)
+- [x] Deployed to staging (staging-agents.getboby.ai) ✅
+- [x] Tech Lead approval ✅
+- [ ] UX approval on complete flows - pending user feedback
 
 ---
 
-## 📱 Phase 2: Mobile Foundation (Week 3)
+## 🏢 Phase 2: Firm Portal (Week 3-4) 🔜 NEXT
 
 ### Goal
-Build the React Native mobile app with Panic Button as the flagship feature.
+Build the Security Firm Portal to complete the job posting → agent assignment workflow.
+
+### Deployment Target
+- **Production:** https://firms.getboby.ai
+- **Staging:** https://staging-firms.getboby.ai
 
 ### 2.1 Project Setup
 
 | Task | Status |
 |------|--------|
-| Initialize Expo project | 🔄 TODO |
-| Configure for iOS + Android | 🔄 TODO |
-| Set up React Navigation | 🔄 TODO |
-| Create mobile-specific @boby/ui exports | 🔄 TODO |
+| Scaffold firm-portal app in monorepo | 🔄 TODO |
+| Reuse @boby/ui components | 🔄 TODO |
+| Configure firm authentication (Firm accounts) | 🔄 TODO |
+| Set up Cloudflare Workers for domains | 🔄 TODO |
 
-### 2.2 Shared Code Strategy
+### 2.2 Firm Portal Pages
 
-```
-packages/ui/
-├── src/
-│   ├── components/          # Web components
-│   └── native/              # React Native components
-│       ├── Button.native.tsx
-│       ├── Card.native.tsx
-│       └── ...
-```
+| Page | Route | Priority | Features |
+|------|-------|----------|----------|
+| Login | `/login` | P0 | Firm credentials, invitation-only |
+| Dashboard | `/` | P0 | Overview stats, pending applications |
+| **Jobs** | `/jobs` | P0 | List all posted jobs |
+| **Post Job** | `/jobs/new` | P0 | Create new job posting |
+| **Edit Job** | `/jobs/:id/edit` | P0 | Modify job details |
+| **View Job** | `/jobs/:id` | P0 | See applications, assign agents |
+| **Applications** | `/applications` | P0 | All incoming applications |
+| **Agents** | `/agents` | P1 | View linked agents |
+| Billing | `/billing` | P2 | Invoices, payments |
+| Settings | `/settings` | P2 | Firm settings |
 
-### 2.3 Mobile Screens
+### 2.3 Core Features
 
-| Screen | Priority | Status |
-|--------|----------|--------|
-| Login | P0 | 🔄 TODO |
-| Dashboard | P0 | 🔄 TODO |
-| **Panic Button** | P0 | 🔄 TODO |
-| **Briefcase** | P0 | 🔄 TODO |
-| Jobs List | P1 | 🔄 TODO |
-| Profile | P1 | 🔄 TODO |
-| Settings | P2 | 🔄 TODO |
+| Feature | Priority | Status | Description |
+|---------|----------|--------|-------------|
+| **Post new job** | P0 | 🔄 TODO | Title, description, location, pay, requirements |
+| **View job enquiries** | P0 | 🔄 TODO | See agents who applied |
+| **Accept/Reject applications** | P0 | 🔄 TODO | Assign agent to job |
+| **Cancel/Close job** | P0 | 🔄 TODO | Job lifecycle management |
+| View agent profiles | P1 | 🔄 TODO | Check agent credentials |
+| Job templates | P2 | 🔄 TODO | Reusable job templates |
+| Agent ratings | P2 | 🔄 TODO | Rate completed work |
 
-### 2.4 Briefcase Screen (Mobile Identity)
+### 2.4 API Endpoints Needed
 
-The Briefcase is the **portable identity** screen - critical for mobile.
+| Endpoint | Method | Purpose | Status |
+|----------|--------|---------|--------|
+| POST /api/jobs | Create | Post new job | ✅ Exists |
+| PUT /api/jobs/:id | Update | Edit job | 🔄 TODO |
+| DELETE /api/jobs/:id | Delete | Remove job | 🔄 TODO |
+| GET /api/jobs/:id/enquiries | Read | View applications | 🔄 TODO |
+| POST /api/jobs/:id/assign | Action | Assign agent | 🔄 TODO |
+| PUT /api/enquiries/:id/status | Update | Accept/reject | 🔄 TODO |
+| GET /api/firms/:id/agents | Read | Linked agents | 🔄 TODO |
+| GET /api/firms/:id/stats | Read | Dashboard stats | 🔄 TODO |
 
-| Feature | Description | Status |
-|---------|-------------|--------|
-| TelePathCode QR | Scannable identity code | 🔄 TODO |
-| Verified Credentials | Digital wallet of Belts | 🔄 TODO |
-| Trust Score Display | Portable reputation | 🔄 TODO |
-| Share Identity | NFC/QR share to venues | 🔄 TODO |
-| Offline Mode | Cached credentials work offline | 🔄 TODO |
+### 2.5 Database Updates Needed
 
-### 2.4 Panic Button Feature (CRITICAL)
+| Table | Change | Purpose |
+|-------|--------|---------|
+| `job_enquiries` | Add `status` column | pending/accepted/rejected/assigned |
+| `job_enquiries` | Add `assigned_at` timestamp | When agent was assigned |
+| `jobs` | Add `status` column if missing | open/filled/closed/cancelled |
+| `jobs` | Add `posted_by_firm_id` | Link to firm |
 
-| Requirement | Status |
-|-------------|--------|
-| Large, accessible emergency button | 🔄 TODO |
-| One-tap activation | 🔄 TODO |
-| GPS location capture | 🔄 TODO |
-| Send alert to control room | 🔄 TODO |
-| Audio recording option | 🔄 TODO |
-| Works offline (queues for sync) | 🔄 TODO |
-| Haptic feedback | 🔄 TODO |
-| Silent mode option | 🔄 TODO |
+### 2.6 UI Components to Build
+
+| Component | Package | Notes |
+|-----------|---------|-------|
+| JobPostForm | firm-portal | Job creation form |
+| ApplicationCard | firm-portal | Display enquiry |
+| ApplicationActions | firm-portal | Accept/Reject buttons |
+| AgentCard | @boby/ui | Display agent info (reusable) |
+| FirmStats | firm-portal | Dashboard metrics |
+| StatusBadge | @boby/ui | Job/application status |
 
 ### Phase 2 Checkpoint ✓
 Before moving to Phase 3:
-- [ ] App runs on iOS simulator
-- [ ] App runs on Android emulator
-- [ ] Login works with existing credentials
-- [ ] Panic Button fully functional
-- [ ] TestFlight build ready (iOS)
-- [ ] Internal testing APK ready (Android)
-- [ ] Tech Lead approval
-- [ ] UX approval on mobile experience
+- [ ] Firm can log in
+- [ ] Firm can post a job
+- [ ] Job appears in Agent Portal
+- [ ] Agent can apply
+- [ ] Firm sees application
+- [ ] Firm can assign agent
+- [ ] Complete workflow tested with real users
 
 ---
 
-## 🎉 Phase 3: Beta Polish (Week 4)
+## 📱 Phase 4: Mobile Foundation (Deferred to Week 6+)
+
+> **Note:** Mobile app deferred to prioritize complete web workflow for beta testing.
+
+### Goal
+Build the React Native mobile app with Panic Button as the flagship feature.
+
+### 4.1 Project Setup
+
+| Task | Status |
+|------|--------|
+| Initialize Expo project | ⏳ Deferred |
+| Configure for iOS + Android | ⏳ Deferred |
+| Set up React Navigation | ⏳ Deferred |
+| Create mobile-specific @boby/ui exports | ⏳ Deferred |
+
+### 4.2 Mobile Screens
+
+| Screen | Priority | Status |
+|--------|----------|--------|
+| Login | P0 | ⏳ Deferred |
+| Dashboard | P0 | ⏳ Deferred |
+| **Panic Button** | P0 | ⏳ Deferred |
+| **Briefcase** | P0 | ⏳ Deferred |
+| Jobs List | P1 | ⏳ Deferred |
+| Profile | P1 | ⏳ Deferred |
+
+### 4.3 Panic Button Feature (CRITICAL for Full Launch)
+
+| Requirement | Status |
+|-------------|--------|
+| Large, accessible emergency button | ⏳ Deferred |
+| One-tap activation | ⏳ Deferred |
+| GPS location capture | ⏳ Deferred |
+| Send alert to control room | ⏳ Deferred |
+| Works offline (queues for sync) | ⏳ Deferred |
+
+---
+
+## 🎉 Phase 3: Beta V1 Polish (Week 4-5)
 
 ### Goal
 Integration, testing, and preparation for Feb 14 Beta Launch.
