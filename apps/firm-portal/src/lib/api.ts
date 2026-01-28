@@ -128,6 +128,8 @@ export interface Job {
 
 export interface JobEnquiry {
     id: string;
+    job_id?: string;
+    job_title?: string;
     enquirer_name?: string;
     enquirer_email?: string;
     enquirer_phone?: string;
@@ -595,6 +597,42 @@ export const jobsApi = {
         }
 
         return { enquiries: data.data?.enquiries || [] };
+    },
+
+    /**
+     * Get ALL enquiries across all jobs for a firm
+     * Fetches all firm's jobs, then gets enquiries for each
+     */
+    async getAllEnquiries(firmId: string): Promise<{
+        enquiries: JobEnquiry[];
+    }> {
+        // First, get all jobs for this firm
+        const { jobs } = await this.list(firmId, { limit: 100 });
+
+        if (jobs.length === 0) {
+            return { enquiries: [] };
+        }
+
+        // Fetch enquiries for each job in parallel
+        const enquiriesPromises = jobs.map(async job => {
+            const result = await this.getEnquiries(job.id);
+            // Add job info to each enquiry
+            return result.enquiries.map(e => ({
+                ...e,
+                job_id: job.id,
+                job_title: job.title
+            }));
+        });
+
+        const allEnquiriesArrays = await Promise.all(enquiriesPromises);
+        const allEnquiries = allEnquiriesArrays.flat();
+
+        // Sort by created_at descending (newest first)
+        allEnquiries.sort((a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+        return { enquiries: allEnquiries };
     },
 
     /**

@@ -9,6 +9,7 @@ import { EarningsPage } from './pages/EarningsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { MyApplicationsPage } from './pages/MyApplicationsPage';
+import { RecruitPage } from './pages/RecruitPage';
 import { LoginPage } from './pages/LoginPage';
 /**
  * ProtectedRoute - Requires authentication
@@ -42,7 +43,7 @@ function PublicRoute({ children }) {
  * AppRoutes - Route definitions
  */
 function AppRoutes() {
-    return (_jsxs(Routes, { children: [_jsx(Route, { path: "/login", element: _jsx(PublicRoute, { children: _jsx(LoginPage, {}) }) }), _jsxs(Route, { path: "/", element: _jsx(ProtectedRoute, { children: _jsx(Layout, {}) }), children: [_jsx(Route, { index: true, element: _jsx(HomePage, {}) }), _jsx(Route, { path: "jobs", element: _jsx(JobsPage, {}) }), _jsx(Route, { path: "jobs/:slug", element: _jsx(JobDetailPage, {}) }), _jsx(Route, { path: "applications", element: _jsx(MyApplicationsPage, {}) }), _jsx(Route, { path: "earnings", element: _jsx(EarningsPage, {}) }), _jsx(Route, { path: "profile", element: _jsx(ProfilePage, {}) }), _jsx(Route, { path: "settings", element: _jsx(SettingsPage, {}) })] })] }));
+    return (_jsxs(Routes, { children: [_jsx(Route, { path: "/login", element: _jsx(PublicRoute, { children: _jsx(LoginPage, {}) }) }), _jsxs(Route, { path: "/", element: _jsx(ProtectedRoute, { children: _jsx(Layout, {}) }), children: [_jsx(Route, { index: true, element: _jsx(HomePage, {}) }), _jsx(Route, { path: "jobs", element: _jsx(JobsPage, {}) }), _jsx(Route, { path: "jobs/:slug", element: _jsx(JobDetailPage, {}) }), _jsx(Route, { path: "applications", element: _jsx(MyApplicationsPage, {}) }), _jsx(Route, { path: "earnings", element: _jsx(EarningsPage, {}) }), _jsx(Route, { path: "profile", element: _jsx(ProfilePage, {}) }), _jsx(Route, { path: "recruit", element: _jsx(RecruitPage, {}) }), _jsx(Route, { path: "settings", element: _jsx(SettingsPage, {}) })] })] }));
 }
 /**
  * App - Main application component

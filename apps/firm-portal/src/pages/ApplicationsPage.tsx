@@ -21,20 +21,26 @@ export default function ApplicationsPage() {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
     const loadEnquiries = useCallback(async () => {
-        if (!jobId) {
+        if (!firmId) {
             setIsLoading(false);
             return;
         }
 
         setIsLoading(true);
         try {
-            // Load job details
-            const jobData = await jobsApi.getById(jobId);
-            setJob(jobData);
+            if (jobId) {
+                // Load specific job and its enquiries
+                const jobData = await jobsApi.getById(jobId);
+                setJob(jobData);
 
-            // Load enquiries
-            const data = await jobsApi.getEnquiries(jobId);
-            setEnquiries(data.enquiries);
+                const data = await jobsApi.getEnquiries(jobId);
+                setEnquiries(data.enquiries);
+            } else {
+                // Load ALL enquiries for all firm's jobs
+                setJob(null);
+                const data = await jobsApi.getAllEnquiries(firmId);
+                setEnquiries(data.enquiries);
+            }
         } catch (error) {
             console.error('Failed to load enquiries:', error);
             addToast({
@@ -45,7 +51,7 @@ export default function ApplicationsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [jobId, addToast]);
+    }, [jobId, firmId, addToast]);
 
     useEffect(() => {
         loadEnquiries();
@@ -114,7 +120,7 @@ export default function ApplicationsPage() {
                 <p className="text-gray-500">
                     {job
                         ? `${enquiries.length} application${enquiries.length !== 1 ? 's' : ''} received`
-                        : 'Select a job to view its applications'
+                        : `${enquiries.length} total application${enquiries.length !== 1 ? 's' : ''} across all jobs`
                     }
                 </p>
             </div>
@@ -164,31 +170,19 @@ export default function ApplicationsPage() {
                         </Card>
                     ))}
                 </div>
-            ) : !jobId ? (
-                <Card>
-                    <CardContent className="p-8">
-                        <EmptyState
-                            icon="📋"
-                            title="Select a Job"
-                            description="Go to Jobs page and click 'View' on a job to see its applications."
-                            action={
-                                <Link to="/jobs">
-                                    <Button>View Jobs</Button>
-                                </Link>
-                            }
-                        />
-                    </CardContent>
-                </Card>
             ) : enquiries.length === 0 ? (
                 <Card>
                     <CardContent className="p-8">
                         <EmptyState
                             icon="📭"
                             title="No Applications Yet"
-                            description="This job hasn't received any applications yet. Make sure your job is active and the description is compelling."
+                            description={job
+                                ? "This job hasn't received any applications yet. Make sure your job is active and the description is compelling."
+                                : "You haven't received any applications yet. Post a job to start receiving applications from Special Agents."
+                            }
                             action={
                                 <Link to={`/jobs`}>
-                                    <Button variant="outline">Back to Jobs</Button>
+                                    <Button variant="outline">{job ? 'Back to Jobs' : 'Post a Job'}</Button>
                                 </Link>
                             }
                         />
@@ -222,6 +216,16 @@ export default function ApplicationsPage() {
                                                 >
                                                     {enquiry.enquirer_email}
                                                 </a>
+                                            )}
+
+                                            {/* Show job title when viewing all applications */}
+                                            {!job && enquiry.job_title && (
+                                                <Link
+                                                    to={`/applications?job=${enquiry.job_id}`}
+                                                    className="text-sm text-gray-500 hover:text-amber-600 block"
+                                                >
+                                                    📋 Applied for: <span className="font-medium">{enquiry.job_title}</span>
+                                                </Link>
                                             )}
 
                                             {enquiry.enquirer_phone && (

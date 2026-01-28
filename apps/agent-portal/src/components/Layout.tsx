@@ -16,6 +16,7 @@ const navigation = [
     { name: 'Jobs', href: '/jobs', marker: 'JB' },
     { name: 'Applications', href: '/applications', marker: 'AP' },
     { name: 'Earnings', href: '/earnings', marker: 'EA' },
+    { name: 'Recruit', href: '/recruit', marker: 'RP' },
     { name: 'Profile', href: '/profile', marker: 'PR' },
     { name: 'Settings', href: '/settings', marker: 'ST' },
 ];

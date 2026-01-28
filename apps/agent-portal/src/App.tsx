@@ -8,6 +8,7 @@ import { EarningsPage } from './pages/EarningsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { MyApplicationsPage } from './pages/MyApplicationsPage';
+import { RecruitPage } from './pages/RecruitPage';
 import { LoginPage } from './pages/LoginPage';
 
 /**
@@ -91,6 +92,7 @@ function AppRoutes() {
                 <Route path="applications" element={<MyApplicationsPage />} />
                 <Route path="earnings" element={<EarningsPage />} />
                 <Route path="profile" element={<ProfilePage />} />
+                <Route path="recruit" element={<RecruitPage />} />
                 <Route path="settings" element={<SettingsPage />} />
             </Route>
         </Routes>

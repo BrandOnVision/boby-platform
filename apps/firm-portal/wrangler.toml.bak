@@ -1,0 +1,2 @@
+# Firm Portal - No Wrangler config needed for direct deploy
+# Just use: npx wrangler pages deploy dist --project-name=firm-portal
