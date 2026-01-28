@@ -3,7 +3,7 @@
 > **Tech Lead:** AI Assistant  
 > **Product Owner/UX:** Brand (User)  
 > **Created:** January 24, 2026  
-> **Last Updated:** January 25, 2026  
+> **Last Updated:** January 28, 2026  
 > **Beta Launch Target:** February 2026  
 > **Full Launch Target:** March 2026
 
@@ -27,6 +27,38 @@
 ---
 
 ## 📋 Session Progress Log
+
+### January 28, 2026 - Firm Portal Jobs & Applications Polish ✅
+
+**Major Accomplishments:**
+- ✅ **Jobs Page Brand Compliance** - Removed all emojis, added gold dot location marker
+- ✅ **Urgent Badge** - Jobs marked as urgent now show "Urgent" label (no icons, on-brand)
+- ✅ **Take Down Functionality** - Now **permanently deletes** jobs instead of soft-delete
+- ✅ **Removed Jobs Hidden** - Jobs with status='removed' filtered from display
+- ✅ **Applications Page Polish** - "Hired" → "Progressed", branded confirmation dialogs
+- ✅ **Agent Name in Modal** - Remove confirmation shows agent's real name
+- ✅ **Toast Z-Index Fixed** - Toast notifications now appear above all other content
+- ✅ **Backend Endpoints** - `DELETE /api/jobs/:id` (real delete), `PUT /api/jobs/:id/status`
+
+**Deployment Status:**
+
+| URL | Service | Status |
+|-----|---------|--------|
+| `https://firms.getboby.ai` | Firm Portal | ✅ **LIVE** |
+| `https://api.getboby.ai` | Backend | ✅ **LIVE** |
+
+**Brand Compliance Verified:**
+- Zero-Icon Mandate ✅
+- Gold Standard (#FFD952) accents ✅
+- Anti-Confirm pattern (branded modals) ✅
+
+**TODO (Next Session):**
+- [ ] View agent profile from Applications page
+- [ ] Test complete job flow: Post → Apply → Review → Progress → Complete
+- [ ] Mobile responsiveness audit
+- [ ] Agent Portal cross-linking (view job from agent side)
+
+---
 
 ### January 25, 2026 (Evening) - Firm Portal Development Started 🏢
 

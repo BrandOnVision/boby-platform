@@ -1,8 +1,8 @@
 # 🏗️ Boby Platform Build Status
 
-> **Last Updated:** 2026-01-24 13:28 AEST  
-> **Current Phase:** Phase 0 - Foundation ✅ COMPLETE  
-> **Current Task:** Phase 1 - Agent Portal integration  
+> **Last Updated:** 2026-01-28 21:30 AEST  
+> **Current Phase:** Phase 2 - Firm Portal ✅ IN PROGRESS  
+> **Current Task:** Jobs Page Polish & Brand Compliance  
 > **Beta Launch Target:** February 14, 2026  
 > **Roadmap:** See `DEVELOPMENT_ROADMAP.md` for full plan
 
@@ -10,16 +10,18 @@
 
 ## 📍 Current Focus
 
-**Phase 0 - Foundation:** ✅ ALL PACKAGES COMPLETE
+**Phase 2 - Firm Portal:** 🔄 IN PROGRESS (Jobs Page Complete)
 
-| Package | P0 Components | Status |
-|---------|---------------|--------|
-| @boby/config | Tailwind, TypeScript configs | ✅ Done |
-| @boby/ui | Button, Card, Input, CircleBadge, Marker, Select, Modal, Toast | ✅ Done |
-| @boby/auth | AuthProvider, useWardrobe, useBriefcase, useAccess | ✅ Done |
-| @boby/api-client | ApiClient, all endpoints | ✅ Done |
+| Feature | Page | Status |
+|---------|------|--------|
+| Login & Auth | `/login` | ✅ Done |
+| Dashboard | `/` | ✅ Done |
+| Jobs List | `/jobs` | ✅ Done (Jan 28 - Brand Polish) |
+| Post Job | `/jobs/new` | ✅ Done |
+| Applications | `/applications` | ✅ Done (Jan 28) |
+| Settings | `/settings` | ✅ Done |
 
-**Next:** Agent Portal API integration (Phase 1)
+**Next:** Agent profile viewing from Applications page
 
 ---
 
@@ -212,6 +214,50 @@ boby-platform/
 ---
 
 ## 📝 Session Log
+
+### Session: Jan 28, 2026 - Firm Portal Jobs & Applications Polish ✅
+**Focus:** Jobs page brand compliance, Applications page improvements, Take Down functionality  
+**Duration:** ~4 hours  
+**Status:** ✅ Deployed to Production
+
+**Completed Work:**
+
+| Area | Task | Status |
+|------|------|--------|
+| **Jobs Page** | Removed all emojis (brand compliance) | ✅ |
+| **Jobs Page** | Added gold dot location marker | ✅ |
+| **Jobs Page** | Added "Urgent" badge for urgent jobs | ✅ |
+| **Jobs Page** | Fixed button styles (View/Take Down) | ✅ |
+| **Jobs Page** | Filter out "Removed" jobs from list | ✅ |
+| **Take Down** | Changed to **permanently delete** jobs | ✅ |
+| **Backend** | Added `DELETE /api/jobs/:id` real delete | ✅ |
+| **Backend** | Added `PUT /api/jobs/:id/status` endpoint | ✅ |
+| **UI** | Toast z-index fix (now visible) | ✅ |
+| **Applications** | "Hired" → "Progressed" terminology | ✅ |
+| **Applications** | Branded confirmation modal for Remove | ✅ |
+| **Applications** | Agent real name in Remove modal | ✅ |
+
+**Deployments:**
+- Firm Portal: `firms.getboby.ai` via Cloudflare Pages ✅
+- Backend: `boby-kaksos-demo-1` Cloud Run ✅
+
+**Backend Changes (jobs.js):**
+```javascript
+// DELETE /api/jobs/:id - Now permanently deletes instead of soft delete
+// PUT /api/jobs/:id/status - New endpoint for status changes
+```
+
+**Brand Compliance:**
+- ✅ Zero-Icon Mandate enforced
+- ✅ Gold (#FFD952) accents used throughout
+- ✅ Branded confirmation dialogs (Anti-Confirm pattern)
+
+**TODO (Next Session):**
+- [ ] View agent profile from Applications page
+- [ ] Test complete job flow end-to-end
+- [ ] Mobile responsiveness audit
+
+---
 
 ### Session: Jan 24, 2026 - Foundation Setup ✅ VERIFIED
 **Focus:** Initial monorepo creation and Agent Portal skeleton  
