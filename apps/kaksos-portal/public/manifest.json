@@ -1,0 +1,29 @@
+{
+    "name": "BOBY Kaksos",
+    "short_name": "Kaksos",
+    "description": "BOBY Kaksos Portal - AI Twin Management Dashboard",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#FFB800",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/logosq.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/logosq.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "productivity",
+        "utilities"
+    ],
+    "lang": "en-AU"
+}
