@@ -66,3 +66,50 @@ button {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
+
+/* Mobile-first responsive utilities */
+@media (max-width: 768px) {
+    /* Touch-friendly tap targets */
+    button, a, input, select, textarea {
+        min-height: 44px;
+    }
+
+    /* Full-width modals on mobile */
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        min-height: 100vh;
+    }
+
+    /* Better spacing for mobile */
+    .mobile-padding {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Stack flex items on mobile */
+    .mobile-stack {
+        flex-direction: column !important;
+    }
+
+    /* Hide on mobile */
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Show only on mobile */
+@media (min-width: 769px) {
+    .show-mobile-only {
+        display: none !important;
+    }
+}
+
+/* Safe area padding for notched phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+    .safe-area-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}

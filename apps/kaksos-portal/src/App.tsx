@@ -5,6 +5,12 @@ import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import SettingsPage from './pages/SettingsPage';
+import ConversationsPage from './pages/ConversationsPage';
+import PlantSeedsPage from './pages/PlantSeedsPage';
+import NurturePage from './pages/NurturePage';
+import WatchGrowPage from './pages/WatchGrowPage';
+import SeedsLibraryPage from './pages/SeedsLibraryPage';
+import CircleManagementPage from './pages/CircleManagementPage';
 
 /**
  * Protected Route Wrapper
@@ -53,6 +59,54 @@ function App() {
                 element={
                     <ProtectedRoute>
                         <SettingsPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/conversations"
+                element={
+                    <ProtectedRoute>
+                        <ConversationsPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/plant-seeds"
+                element={
+                    <ProtectedRoute>
+                        <PlantSeedsPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/nurture"
+                element={
+                    <ProtectedRoute>
+                        <NurturePage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/circles"
+                element={
+                    <ProtectedRoute>
+                        <CircleManagementPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/watch-grow"
+                element={
+                    <ProtectedRoute>
+                        <WatchGrowPage />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/seeds-library"
+                element={
+                    <ProtectedRoute>
+                        <SeedsLibraryPage />
                     </ProtectedRoute>
                 }
             />
