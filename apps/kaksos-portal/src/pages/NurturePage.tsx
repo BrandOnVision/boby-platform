@@ -4,7 +4,7 @@
  * Per SPEC_Nurture_v2.md
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { nurtureApi, circlesApi, CircleLevel, NurtureChatResponse, NurtureStatsResponse, NurturePendingSeedsResponse } from '../lib/api';
 import DashboardLayout from '../components/DashboardLayout';
@@ -44,10 +44,13 @@ export default function NurturePage() {
     const bobyPlaceId = user?.id || '';
 
     // Circle perspective state
-    const [selectedCircle, setSelectedCircle] = useState<CircleLevel>('public');
+    const [selectedCircle, setSelectedCircle] = useState<CircleLevel>('center');
     const [circleMembers, setCircleMembers] = useState<CircleMember[]>([]);
     const [selectedMember, setSelectedMember] = useState<CircleMember | null>(null);
     const [showMemberModal, setShowMemberModal] = useState(false);
+    const [showCircleModal, setShowCircleModal] = useState(false);
+    const [memberSearch, setMemberSearch] = useState('');
+    const [showChatModal, setShowChatModal] = useState(false);
 
     // Chat state
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -225,8 +228,8 @@ export default function NurturePage() {
                 content: approvalType === 'good'
                     ? `✅ Memory saved to ${circlesArray.length} circle${circlesArray.length > 1 ? 's' : ''}: ${circleNames}`
                     : approvalType === 'correct'
-                    ? `✅ Correction saved to ${circlesArray.length} circle${circlesArray.length > 1 ? 's' : ''}: ${circleNames}`
-                    : `⛔ "Never say this" boundary set for ${circlesArray.length} circle${circlesArray.length > 1 ? 's' : ''}: ${circleNames}`,
+                        ? `✅ Correction saved to ${circlesArray.length} circle${circlesArray.length > 1 ? 's' : ''}: ${circleNames}`
+                        : `⛔ "Never say this" boundary set for ${circlesArray.length} circle${circlesArray.length > 1 ? 's' : ''}: ${circleNames}`,
             };
             setMessages(prev => [...prev, feedbackMsg]);
             setLastResponseId(null);
@@ -336,13 +339,25 @@ export default function NurturePage() {
         // Pre-fill the chat input with the seed's question for testing
         setInputMessage(selectedSeed.question);
         setShowSeedReviewModal(false);
+        // On mobile, open the chat modal
+        setShowChatModal(true);
     }
 
     const circleConfig = getCircleConfig(selectedCircle);
 
+    // Filter members by search term
+    const filteredMembers = useMemo(() => {
+        if (!memberSearch.trim()) return circleMembers;
+        const search = memberSearch.toLowerCase();
+        return circleMembers.filter(m =>
+            m.member_name.toLowerCase().includes(search) ||
+            m.member_email.toLowerCase().includes(search)
+        );
+    }, [circleMembers, memberSearch]);
+
     return (
         <DashboardLayout>
-            <div className="h-[calc(100vh-3.5rem)] md:h-[calc(100vh-0rem)] flex flex-col p-4 md:p-6 gap-4">
+            <div className="h-[calc(100dvh-3.5rem)] md:h-[calc(100vh-0px)] flex flex-col p-4 md:p-6 gap-4 overflow-hidden">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
@@ -358,78 +373,184 @@ export default function NurturePage() {
                 </div>
 
                 {/* Main Content - Responsive Grid */}
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0 overflow-auto lg:overflow-visible">
-                    {/* Left Column - Circle Selector & Testing */}
-                    <div className="lg:col-span-2 flex flex-col gap-4 min-h-0 order-2 lg:order-1">
-                        {/* Circle Perspective Selector */}
+                <div className="flex-1 flex flex-col lg:grid lg:grid-cols-3 gap-4 min-h-0 overflow-hidden">
+                    {/* Circle Selector - First on mobile */}
+                    <div className="flex-shrink-0 lg:col-span-2 order-1 w-full min-w-0">
                         <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-medium text-gray-800 text-sm md:text-base">Testing as Circle</h3>
-                                {selectedMember && (
-                                    <button
-                                        onClick={() => setShowMemberModal(true)}
-                                        className="text-sm text-primary hover:underline flex items-center gap-1"
-                                    >
-                                        <span className="font-medium">{selectedMember.member_name}</span>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                            <h3 className="font-medium text-gray-800 text-sm md:text-base mb-3">Testing as Circle</h3>
+
+                            {/* Mobile: Dropdown triggers */}
+                            <div className="md:hidden space-y-3">
+                                {/* Circle selector trigger */}
+                                <button
+                                    onClick={() => setShowCircleModal(true)}
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className={`w-3 h-3 rounded-full ${circleConfig.bgColor} border border-current ${circleConfig.color}`} />
+                                        <span className="font-medium text-gray-800">{circleConfig.label} Circle</span>
+                                    </div>
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Member selector trigger */}
+                                <button
+                                    onClick={() => {
+                                        setMemberSearch('');
+                                        setShowMemberModal(true);
+                                    }}
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
-                                    </button>
-                                )}
+                                        <span className="text-gray-800">{selectedMember?.member_name || `Anonymous ${circleConfig.label}`}</span>
+                                    </div>
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {/* Mobile: Start conversation button */}
+                                <button
+                                    onClick={() => setShowChatModal(true)}
+                                    className="mt-4 w-full py-4 bg-primary text-gray-800 font-medium rounded-xl hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    Start Test Conversation
+                                    {messages.length > 0 && (
+                                        <span className="ml-1 px-2 py-0.5 bg-white/30 rounded-full text-xs">
+                                            {messages.length}
+                                        </span>
+                                    )}
+                                </button>
                             </div>
-                            {/* Circle buttons - scrollable on mobile */}
-                            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 md:overflow-visible md:pb-0">
-                                {CIRCLES.map(circle => (
-                                    <button
-                                        key={circle.value}
-                                        onClick={() => {
-                                            setSelectedCircle(circle.value);
-                                            setSelectedMember(null);
-                                        }}
-                                        className={`flex-shrink-0 md:flex-1 px-4 md:px-3 py-2.5 md:py-2 rounded-lg text-sm font-medium transition-all ${
-                                            selectedCircle === circle.value
+
+                            {/* Desktop: Inline buttons */}
+                            <div className="hidden md:block">
+                                <div className="flex gap-2">
+                                    {CIRCLES.map(circle => (
+                                        <button
+                                            key={circle.value}
+                                            onClick={() => {
+                                                setSelectedCircle(circle.value);
+                                                setSelectedMember(null);
+                                            }}
+                                            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${selectedCircle === circle.value
                                                 ? `${circle.bgColor} ${circle.color} ring-2 ring-offset-1 ring-current`
                                                 : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                                        }`}
-                                    >
-                                        {circle.label}
-                                    </button>
-                                ))}
-                            </div>
-                            <p className="mt-2 text-xs text-gray-500 hidden md:block">{circleConfig.description}</p>
+                                                }`}
+                                        >
+                                            {circle.label}
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="mt-2 text-xs text-gray-500">{circleConfig.description}</p>
 
-                            {/* Member selector button */}
-                            {circleMembers.length > 0 && (
+                                {/* Member selector button - desktop */}
                                 <button
-                                    onClick={() => setShowMemberModal(true)}
-                                    className="mt-3 w-full px-3 py-2.5 md:py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors flex items-center justify-center gap-2"
+                                    onClick={() => {
+                                        setMemberSearch('');
+                                        setShowMemberModal(true);
+                                    }}
+                                    className="mt-3 w-full px-3 py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-gray-400 hover:text-gray-800 transition-colors flex items-center justify-center gap-2"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
-                                    <span className="truncate">{selectedMember ? `Switch from ${selectedMember.member_name}` : `Test as ${circleConfig.label} member`}</span>
+                                    <span className="truncate">{selectedMember ? `Testing as ${selectedMember.member_name}` : `Test as ${circleConfig.label} member`}</span>
                                 </button>
-                            )}
+                            </div>
                         </div>
+                    </div>
 
-                        {/* Chat Interface */}
-                        <div className="flex-1 bg-white rounded-xl border border-gray-200 flex flex-col min-h-[300px] md:min-h-0">
+                    {/* Needs Pruning - Mobile only (order-2), expands to fill space */}
+                    <div className="flex-1 min-h-0 order-2 lg:hidden">
+                        <div className="h-full bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden">
+                            <div className="p-3 border-b border-gray-100 flex items-center justify-between">
+                                <h3 className="font-medium text-gray-800 text-sm">Needs Pruning</h3>
+                                {pendingSeeds && pendingSeeds.summary.totalNeedsAttention > 0 && (
+                                    <span className="text-xs text-amber-600 font-medium">
+                                        {pendingSeeds.summary.totalNeedsAttention} seeds
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-3">
+                                {isLoading ? (
+                                    <div className="animate-pulse space-y-2">
+                                        {[1, 2].map(i => (
+                                            <div key={i} className="h-10 bg-gray-100 rounded" />
+                                        ))}
+                                    </div>
+                                ) : pendingSeeds && pendingSeeds.summary.totalNeedsAttention > 0 ? (
+                                    <div className="space-y-2">
+                                        {pendingSeeds.needsReview.map(seed => (
+                                            <button
+                                                key={seed.id}
+                                                onClick={() => handleSeedClick(seed)}
+                                                className="w-full text-left p-2 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition-colors"
+                                            >
+                                                <p className="text-xs text-amber-800 font-medium line-clamp-1">{seed.question}</p>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center py-4">
+                                        <div className="flex items-center gap-2 text-green-600">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            <span className="text-sm">All caught up!</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Chat Interface - Third on mobile (order-3) */}
+                    <div className="hidden md:flex flex-1 min-h-0 order-3 lg:order-1 lg:col-span-2">
+                        <div className="w-full h-full min-h-[200px] bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden">
                             {/* Chat Messages */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                                 {messages.length === 0 ? (
-                                    <div className="h-full flex items-center justify-center text-center">
-                                        <div>
-                                            <div className={`w-16 h-16 ${circleConfig.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                                                <svg className={`w-8 h-8 ${circleConfig.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <>
+                                        {/* Mobile: Compact prompt */}
+                                        <div className="md:hidden py-6 text-center">
+                                            <div className={`w-10 h-10 ${circleConfig.bgColor} rounded-full flex items-center justify-center mx-auto mb-3`}>
+                                                <svg className={`w-5 h-5 ${circleConfig.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                                 </svg>
                                             </div>
-                                            <p className="text-gray-500 font-medium">Test as {circleConfig.label} circle</p>
-                                            <p className="text-gray-400 text-sm mt-1">
-                                                Send a message to see how your Kaksos responds at this access level
+                                            <p className="text-gray-500 text-sm px-4">
+                                                Send a message to test as{' '}
+                                                <span className={`font-medium ${circleConfig.color}`}>{circleConfig.label}</span>
+                                                {selectedMember && (
+                                                    <span className="text-gray-400"> ({selectedMember.member_name})</span>
+                                                )}
                                             </p>
                                         </div>
-                                    </div>
+
+                                        {/* Desktop: Full illustration */}
+                                        <div className="hidden md:flex h-full items-center justify-center text-center">
+                                            <div>
+                                                <div className={`w-16 h-16 ${circleConfig.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                                                    <svg className={`w-8 h-8 ${circleConfig.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                                    </svg>
+                                                </div>
+                                                <p className="text-gray-500 font-medium">Test as {circleConfig.label} circle</p>
+                                                <p className="text-gray-400 text-sm mt-1">
+                                                    Send a message to see how your Kaksos responds at this access level
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
                                 ) : (
                                     messages.map(msg => (
                                         <div
@@ -437,11 +558,10 @@ export default function NurturePage() {
                                             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                         >
                                             <div
-                                                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                                                    msg.role === 'user'
-                                                        ? 'bg-primary text-gray-800'
-                                                        : 'bg-gray-100 text-gray-800'
-                                                }`}
+                                                className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === 'user'
+                                                    ? 'bg-primary text-gray-800'
+                                                    : 'bg-gray-100 text-gray-800'
+                                                    }`}
                                             >
                                                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
 
@@ -466,8 +586,8 @@ export default function NurturePage() {
                                                                     {src.type === 'planted_by' && src.peelerName
                                                                         ? `From ${src.peelerName}`
                                                                         : src.type === 'personal_memory'
-                                                                        ? 'Personal memory'
-                                                                        : src.type}
+                                                                            ? 'Personal memory'
+                                                                            : src.type}
                                                                 </span>
                                                             ))}
                                                         </div>
@@ -539,10 +659,10 @@ export default function NurturePage() {
                         </div>
                     </div>
 
-                    {/* Right Column - Stats & Pending Seeds */}
-                    <div className="flex flex-col gap-4 min-h-0 order-1 lg:order-2">
-                        {/* Quick Stats - Horizontal on mobile, vertical on desktop */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                    {/* Right Column - Stats & Pending Seeds (Desktop only) */}
+                    <div className="hidden lg:flex flex-col gap-4 min-h-0 order-4 overflow-hidden">
+                        {/* Quick Stats - Hidden on mobile until properly implemented */}
+                        <div className="hidden lg:block bg-white rounded-xl border border-gray-200 p-3 md:p-4">
                             <h3 className="font-medium text-gray-800 mb-3 text-sm md:text-base">Growth Progress</h3>
                             {isLoading ? (
                                 <div className="animate-pulse space-y-2">
@@ -584,8 +704,8 @@ export default function NurturePage() {
                             )}
                         </div>
 
-                        {/* Seeds by Circle */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                        {/* Seeds by Circle - Hidden on mobile until properly implemented */}
+                        <div className="hidden lg:block bg-white rounded-xl border border-gray-200 p-4">
                             <h3 className="font-medium text-gray-800 mb-3">Seeds by Circle</h3>
                             {isLoading ? (
                                 <div className="animate-pulse space-y-2">
@@ -616,10 +736,10 @@ export default function NurturePage() {
                             ) : null}
                         </div>
 
-                        {/* Needs Attention */}
+                        {/* Needs Pruning */}
                         <div className="flex-1 bg-white rounded-xl border border-gray-200 flex flex-col min-h-0">
                             <div className="p-4 border-b border-gray-100">
-                                <h3 className="font-medium text-gray-800">Needs Attention</h3>
+                                <h3 className="font-medium text-gray-800">Needs Pruning</h3>
                                 {pendingSeeds && pendingSeeds.summary.totalNeedsAttention > 0 && (
                                     <span className="text-xs text-amber-600 font-medium">
                                         {pendingSeeds.summary.totalNeedsAttention} seeds
@@ -673,10 +793,60 @@ export default function NurturePage() {
                 </div>
             </div>
 
+            {/* Circle Selection Modal (Mobile) */}
+            {showCircleModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-gray-800">Select Circle</h3>
+                            <button
+                                onClick={() => setShowCircleModal(false)}
+                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                            {CIRCLES.map(circle => (
+                                <button
+                                    key={circle.value}
+                                    onClick={() => {
+                                        setSelectedCircle(circle.value);
+                                        setSelectedMember(null);
+                                        setShowCircleModal(false);
+                                    }}
+                                    className={`w-full p-4 rounded-lg border text-left transition-colors ${selectedCircle === circle.value
+                                        ? `${circle.bgColor} border-current ${circle.color}`
+                                        : 'border-gray-200 hover:border-gray-300'
+                                        }`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <span className={`w-4 h-4 rounded-full ${circle.bgColor} border-2 border-current ${circle.color}`} />
+                                            <span className={`font-medium ${selectedCircle === circle.value ? circle.color : 'text-gray-800'}`}>
+                                                {circle.label}
+                                            </span>
+                                        </div>
+                                        {selectedCircle === circle.value && (
+                                            <svg className={`w-5 h-5 ${circle.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1 ml-7">{circle.description}</p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Member Selection Modal */}
             {showMemberModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 md:p-4">
-                    <div className="bg-white rounded-t-xl md:rounded-xl shadow-xl w-full max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[85vh] md:max-h-[80vh] flex flex-col mx-auto">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-800">
                                 Select {circleConfig.label} Member
@@ -690,38 +860,60 @@ export default function NurturePage() {
                                 </svg>
                             </button>
                         </div>
+
+                        {/* Search input */}
+                        <div className="p-4 border-b border-gray-100">
+                            <div className="relative">
+                                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <input
+                                    type="text"
+                                    value={memberSearch}
+                                    onChange={(e) => setMemberSearch(e.target.value)}
+                                    placeholder="Search members..."
+                                    className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                                />
+                            </div>
+                        </div>
+
                         <div className="flex-1 overflow-y-auto p-4 safe-area-bottom">
-                            {/* Anonymous option */}
+                            {/* Anonymous option - always visible */}
                             <button
                                 onClick={() => {
                                     setSelectedMember(null);
                                     setShowMemberModal(false);
                                 }}
-                                className={`w-full p-4 md:p-3 rounded-lg border text-left mb-2 transition-colors ${
-                                    !selectedMember
-                                        ? 'border-primary bg-primary-light'
-                                        : 'border-gray-200 hover:border-gray-300'
-                                }`}
+                                className={`w-full p-4 md:p-3 rounded-lg border text-left mb-3 transition-colors ${!selectedMember
+                                    ? 'border-primary bg-primary-light'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                    }`}
                             >
                                 <p className="font-medium text-gray-800">Anonymous {circleConfig.label}</p>
                                 <p className="text-xs text-gray-500 mt-0.5">Test without a specific member context</p>
                             </button>
 
-                            {/* Members list */}
-                            {circleMembers.length > 0 ? (
+                            {/* Members list header */}
+                            {circleMembers.length > 0 && (
+                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
+                                    Members ({filteredMembers.length})
+                                </p>
+                            )}
+
+                            {/* Filtered members list */}
+                            {filteredMembers.length > 0 ? (
                                 <div className="space-y-2">
-                                    {circleMembers.map(member => (
+                                    {filteredMembers.map(member => (
                                         <button
                                             key={member.id}
                                             onClick={() => {
                                                 setSelectedMember(member);
                                                 setShowMemberModal(false);
                                             }}
-                                            className={`w-full p-4 md:p-3 rounded-lg border text-left transition-colors ${
-                                                selectedMember?.id === member.id
-                                                    ? 'border-primary bg-primary-light'
-                                                    : 'border-gray-200 hover:border-gray-300'
-                                            }`}
+                                            className={`w-full p-4 md:p-3 rounded-lg border text-left transition-colors ${selectedMember?.id === member.id
+                                                ? 'border-primary bg-primary-light'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                                }`}
                                         >
                                             <p className="font-medium text-gray-800">{member.member_name}</p>
                                             {member.member_email && (
@@ -729,6 +921,16 @@ export default function NurturePage() {
                                             )}
                                         </button>
                                     ))}
+                                </div>
+                            ) : circleMembers.length > 0 ? (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 text-sm">No members match "{memberSearch}"</p>
+                                    <button
+                                        onClick={() => setMemberSearch('')}
+                                        className="text-primary text-sm mt-1 hover:underline"
+                                    >
+                                        Clear search
+                                    </button>
                                 </div>
                             ) : (
                                 <div className="text-center py-8">
@@ -743,8 +945,8 @@ export default function NurturePage() {
 
             {/* Seed Review Modal */}
             {showSeedReviewModal && selectedSeed && (
-                <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 md:p-4">
-                    <div className="bg-white rounded-t-xl md:rounded-xl shadow-xl w-full max-w-[calc(100vw-2rem)] sm:max-w-lg md:max-w-2xl max-h-[90vh] md:max-h-[80vh] flex flex-col mx-auto">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-800">Review Seed</h3>
@@ -824,8 +1026,8 @@ export default function NurturePage() {
 
             {/* Multi-Circle Approval Modal */}
             {showApprovalModal && lastQAPair && (
-                <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50 md:p-4">
-                    <div className="bg-white rounded-t-xl md:rounded-xl shadow-xl w-full max-w-[calc(100vw-2rem)] sm:max-w-lg max-h-[95vh] md:max-h-[90vh] flex flex-col mx-auto">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-200">
                             <h3 className="text-lg font-semibold text-gray-800">
                                 {approvalType === 'good' ? 'Approve Memory' : approvalType === 'correct' ? 'Save Correction' : 'Set Boundary'}
@@ -834,8 +1036,8 @@ export default function NurturePage() {
                                 {approvalType === 'good'
                                     ? 'This Q&A will become permanent knowledge'
                                     : approvalType === 'correct'
-                                    ? 'Your correction will be saved as permanent knowledge'
-                                    : 'This will prevent Kaksos from saying this'}
+                                        ? 'Your correction will be saved as permanent knowledge'
+                                        : 'This will prevent Kaksos from saying this'}
                             </p>
                         </div>
 
@@ -849,7 +1051,7 @@ export default function NurturePage() {
                                     <div>
                                         <p className="text-sm font-medium text-amber-800">This memory will become permanent</p>
                                         <p className="text-xs text-amber-700 mt-1">
-                                            Once approved, this Q&A cannot be edited or deleted — only suppressed with a boundary.
+                                            Once approved, this Q&A cannot be edited or deleted, only suppressed with a boundary.
                                         </p>
                                     </div>
                                 </div>
@@ -889,17 +1091,16 @@ export default function NurturePage() {
                                     Select which circles should have access to this knowledge:
                                 </label>
                                 <p className="text-xs text-gray-500 mb-3">
-                                    Select any combination — each circle stores separately
+                                    Select any combination, each circle stores separately
                                 </p>
                                 <div className="space-y-2">
                                     {CIRCLES.map(circle => (
                                         <label
                                             key={circle.value}
-                                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                                                selectedCircles.has(circle.value)
-                                                    ? `${circle.bgColor} border-current ${circle.color}`
-                                                    : 'border-gray-200 hover:border-gray-300'
-                                            }`}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedCircles.has(circle.value)
+                                                ? `${circle.bgColor} border-current ${circle.color}`
+                                                : 'border-gray-200 hover:border-gray-300'
+                                                }`}
                                         >
                                             <input
                                                 type="checkbox"
@@ -933,11 +1134,10 @@ export default function NurturePage() {
                             <button
                                 onClick={handleApprovalSubmit}
                                 disabled={selectedCircles.size === 0 || feedbackLoading || (approvalType === 'correct' && !correctionText.trim())}
-                                className={`px-4 py-3 sm:py-2 font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${
-                                    approvalType === 'never'
-                                        ? 'bg-red-600 text-white hover:bg-red-700'
-                                        : 'bg-green-600 text-white hover:bg-green-700'
-                                }`}
+                                className={`px-4 py-3 sm:py-2 font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${approvalType === 'never'
+                                    ? 'bg-red-600 text-white hover:bg-red-700'
+                                    : 'bg-green-600 text-white hover:bg-green-700'
+                                    }`}
                             >
                                 {feedbackLoading ? (
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -957,6 +1157,153 @@ export default function NurturePage() {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Mobile Chat Modal */}
+            {showChatModal && (
+                <div className="md:hidden fixed inset-0 bg-white z-50 flex flex-col" style={{ height: '100dvh' }}>
+                    {/* Header */}
+                    <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-white safe-area-top">
+                        <div>
+                            <h2 className="font-semibold text-gray-800">
+                                Test as {circleConfig.label}
+                            </h2>
+                            <p className="text-xs text-gray-500">
+                                {selectedMember?.member_name || 'Anonymous'}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowChatModal(false)}
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {/* Chat Messages */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                        {messages.length === 0 ? (
+                            <div className="h-full flex items-center justify-center text-center">
+                                <div>
+                                    <div className={`w-16 h-16 ${circleConfig.bgColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                                        <svg className={`w-8 h-8 ${circleConfig.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-gray-500 font-medium">Test as {circleConfig.label}</p>
+                                    <p className="text-gray-400 text-sm mt-1 px-8">
+                                        Send a message to see how your Kaksos responds at this access level
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            messages.map(msg => (
+                                <div
+                                    key={msg.id}
+                                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                                >
+                                    <div
+                                        className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === 'user'
+                                            ? 'bg-primary text-gray-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                            }`}
+                                    >
+                                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+
+                                        {/* Memory context indicator */}
+                                        {msg.memoryContext && (
+                                            <div className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-500">
+                                                <span className="font-medium">Context:</span> {msg.memoryContext.totalMemories} memories
+                                            </div>
+                                        )}
+
+                                        {/* Sources */}
+                                        {msg.sources && msg.sources.length > 0 && (
+                                            <div className="mt-2 pt-2 border-t border-gray-200">
+                                                <p className="text-xs text-gray-500 mb-1">Sources:</p>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {msg.sources.slice(0, 3).map((src, i) => (
+                                                        <span
+                                                            key={i}
+                                                            className="px-2 py-0.5 bg-white rounded text-xs text-gray-600"
+                                                        >
+                                                            {src.type === 'planted_by' && src.peelerName
+                                                                ? `From ${src.peelerName}`
+                                                                : src.type === 'personal_memory'
+                                                                    ? 'Personal memory'
+                                                                    : src.type}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        <div ref={chatEndRef} />
+                    </div>
+
+                    {/* Feedback Buttons */}
+                    {lastResponseId && (
+                        <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100">
+                            <p className="text-xs text-gray-500 mb-2 text-center">How was this response?</p>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleFeedback('good')}
+                                    disabled={feedbackLoading}
+                                    className="flex-1 min-h-[44px] px-3 py-2.5 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50"
+                                >
+                                    Good
+                                </button>
+                                <button
+                                    onClick={() => handleFeedback('correct')}
+                                    disabled={feedbackLoading}
+                                    className="flex-1 min-h-[44px] px-3 py-2.5 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+                                >
+                                    Correct
+                                </button>
+                                <button
+                                    onClick={() => handleFeedback('never')}
+                                    disabled={feedbackLoading}
+                                    className="flex-1 min-h-[44px] px-3 py-2.5 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                                >
+                                    Never
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Input */}
+                    <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t border-gray-200 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={inputMessage}
+                                onChange={(e) => setInputMessage(e.target.value)}
+                                placeholder={`Message as ${selectedMember?.member_name || circleConfig.label}...`}
+                                className="flex-1 min-h-[44px] px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                disabled={isSending}
+                                autoFocus
+                            />
+                            <button
+                                type="submit"
+                                disabled={!inputMessage.trim() || isSending}
+                                className="min-h-[44px] min-w-[44px] px-4 py-3 bg-primary text-gray-800 font-medium rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center justify-center"
+                            >
+                                {isSending ? (
+                                    <div className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" />
+                                ) : (
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                    </svg>
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
         </DashboardLayout>
