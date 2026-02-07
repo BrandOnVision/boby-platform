@@ -514,7 +514,7 @@ export default function NurturePage() {
                     </div>
 
                     {/* Chat Interface - Third on mobile (order-3) */}
-                    <div className="hidden md:flex flex-1 min-h-0 order-3 lg:order-1 lg:col-span-2">
+                    <div className="hidden md:flex flex-1 min-h-0 order-3 lg:order-1 lg:col-span-2 w-full">
                         <div className="w-full h-full min-h-[200px] bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden">
                             {/* Chat Messages */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
