@@ -2,6 +2,10 @@
  * Kaksos Portal - Dashboard Layout
  * Provides the sidebar + main content area structure
  * Mobile responsive with hamburger menu
+ *
+ * Layout pattern:
+ * - Desktop: Flexbox row - sidebar static on left, content fills rest
+ * - Mobile: Sidebar hidden with transform, content full width
  */
 
 import { ReactNode, useState, useEffect } from 'react';
@@ -50,9 +54,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         : '?';
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row max-w-full overflow-x-hidden">
-            {/* Mobile Header */}
-            <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-40">
+        <div className="min-h-screen bg-gray-50">
+            {/* Mobile Header - visible only on mobile */}
+            <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-30 flex items-center justify-between px-4">
                 <button
                     onClick={() => setSidebarOpen(true)}
                     className="min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
@@ -71,32 +75,34 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             (e.target as HTMLImageElement).style.display = 'none';
                         }}
                     />
-                    Kaksos Portal
                 </span>
                 <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
                     <span className="text-xs font-semibold text-gray-800">{initials}</span>
                 </div>
             </header>
 
-            {/* Mobile Overlay */}
+            {/* Mobile Overlay - visible when sidebar open on mobile */}
             {sidebarOpen && (
                 <div
-                    className="md:hidden fixed inset-0 bg-black/50 z-40"
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
                     onClick={() => setSidebarOpen(false)}
                     aria-hidden="true"
                 />
             )}
 
-            {/* Sidebar */}
-            <Sidebar
-                isOpen={sidebarOpen}
-                onClose={() => setSidebarOpen(false)}
-            />
+            {/* Flex container for sidebar + main */}
+            <div className="flex">
+                {/* Sidebar */}
+                <Sidebar
+                    isOpen={sidebarOpen}
+                    onClose={() => setSidebarOpen(false)}
+                />
 
-            {/* Main Content */}
-            <main className="flex-1 max-w-full overflow-x-hidden pt-14 md:pt-0">
-                {children}
-            </main>
+                {/* Main Content - flex-1 takes remaining space */}
+                <main className="flex-1 pt-14 md:pt-0 min-h-screen">
+                    {children}
+                </main>
+            </div>
         </div>
     );
 }
