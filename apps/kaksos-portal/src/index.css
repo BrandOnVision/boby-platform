@@ -113,3 +113,38 @@ button {
         padding-bottom: env(safe-area-inset-bottom);
     }
 }
+
+/* Fix for mobile viewport height (100vh includes browser chrome) */
+/* Use 100dvh where supported, with vh fallback */
+@supports (height: 100dvh) {
+    :root {
+        --mobile-vh: 100dvh;
+    }
+}
+
+@supports not (height: 100dvh) {
+    :root {
+        --mobile-vh: 100vh;
+    }
+}
+
+/* Prevent iOS rubber banding on scrollable containers */
+.overflow-y-auto,
+.overflow-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Ensure flex children can shrink properly for scrolling */
+.min-h-0 {
+    min-height: 0 !important;
+}
+
+/* Nurture page grid fix - forces grid layout at desktop */
+/* Tailwind's built CSS ordering lets flex override lg:grid */
+@media (min-width: 1024px) {
+  .nurture-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}

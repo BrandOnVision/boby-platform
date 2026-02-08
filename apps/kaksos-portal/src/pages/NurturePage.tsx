@@ -373,7 +373,7 @@ export default function NurturePage() {
                 </div>
 
                 {/* Main Content - Responsive Grid */}
-                <div className="flex-1 flex flex-col lg:grid lg:grid-cols-3 gap-4 min-h-0 overflow-hidden">
+                <div className="flex-1 flex flex-col nurture-grid gap-4 min-h-0 overflow-hidden">
                     {/* Circle Selector - First on mobile */}
                     <div className="flex-shrink-0 lg:col-span-2 order-1 w-full min-w-0">
                         <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
