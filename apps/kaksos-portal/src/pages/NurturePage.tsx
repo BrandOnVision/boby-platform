@@ -1006,39 +1006,39 @@ export default function NurturePage() {
                                     <p className="text-sm text-amber-700 mt-1">{selectedSeed.review_reason}</p>
                                 </div>
                             )}
-                        </div>
 
-                        {/* Circle Selection for Seed Review */}
-                        <div className="px-4 pb-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Select which circles should have access to this knowledge:
-                            </label>
-                            <p className="text-xs text-gray-500 mb-3">
-                                Select any combination, each circle stores separately
-                            </p>
-                            <div className="space-y-2">
-                                {CIRCLES.map(circle => (
-                                    <label
-                                        key={circle.value}
-                                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${seedReviewCircles.has(circle.value)
-                                            ? `${circle.bgColor} border-current ${circle.color}`
-                                            : 'border-gray-200 hover:border-gray-300'
-                                            }`}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={seedReviewCircles.has(circle.value)}
-                                            onChange={() => toggleSeedReviewCircle(circle.value)}
-                                            className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
-                                        />
-                                        <div className="flex-1">
-                                            <span className={`font-medium ${seedReviewCircles.has(circle.value) ? circle.color : 'text-gray-800'}`}>
-                                                {circle.label}
-                                            </span>
-                                            <p className="text-xs text-gray-500 mt-0.5">{circle.description}</p>
-                                        </div>
-                                    </label>
-                                ))}
+                            {/* Circle Selection for Seed Review */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Select which circles should have access to this knowledge:
+                                </label>
+                                <p className="text-xs text-gray-500 mb-3">
+                                    Select any combination, each circle stores separately
+                                </p>
+                                <div className="space-y-2">
+                                    {CIRCLES.map(circle => (
+                                        <label
+                                            key={circle.value}
+                                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${seedReviewCircles.has(circle.value)
+                                                ? `${circle.bgColor} border-current ${circle.color}`
+                                                : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={seedReviewCircles.has(circle.value)}
+                                                onChange={() => toggleSeedReviewCircle(circle.value)}
+                                                className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                                            />
+                                            <div className="flex-1">
+                                                <span className={`font-medium ${seedReviewCircles.has(circle.value) ? circle.color : 'text-gray-800'}`}>
+                                                    {circle.label}
+                                                </span>
+                                                <p className="text-xs text-gray-500 mt-0.5">{circle.description}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
