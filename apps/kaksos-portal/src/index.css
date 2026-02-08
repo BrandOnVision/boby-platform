@@ -140,11 +140,16 @@ button {
     min-height: 0 !important;
 }
 
-/* Nurture page grid fix - forces grid layout at desktop */
-/* Tailwind's built CSS ordering lets flex override lg:grid */
+/* Nurture page layout — single class handles mobile (flex) and desktop (grid) */
+/* No competing Tailwind utilities = no ordering conflicts, no !important needed */
+.nurture-layout {
+  display: flex;
+  flex-direction: column;
+}
+
 @media (min-width: 1024px) {
-  .nurture-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  .nurture-layout {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

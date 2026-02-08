@@ -373,7 +373,7 @@ export default function NurturePage() {
                 </div>
 
                 {/* Main Content - Responsive Grid */}
-                <div className="flex-1 flex flex-col nurture-grid gap-4 min-h-0 overflow-hidden">
+                <div className="flex-1 nurture-layout gap-4 min-h-0 overflow-hidden">
                     {/* Circle Selector - First on mobile */}
                     <div className="flex-shrink-0 lg:col-span-2 order-1 w-full min-w-0">
                         <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
@@ -514,7 +514,7 @@ export default function NurturePage() {
                     </div>
 
                     {/* Chat Interface - Third on mobile (order-3) */}
-                    <div className="hidden md:block flex-1 min-h-0 order-3 lg:order-1 lg:col-span-2 w-full min-w-0">
+                    <div className="hidden md:block flex-1 min-h-0 order-3 lg:order-1 lg:col-span-2">
                         <div className="h-full min-h-[200px] bg-white rounded-xl border border-gray-200 flex flex-col overflow-hidden">
                             {/* Chat Messages */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
