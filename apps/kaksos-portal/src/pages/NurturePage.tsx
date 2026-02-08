@@ -11,9 +11,9 @@ import DashboardLayout from '../components/DashboardLayout';
 
 // Circle configuration
 const CIRCLES: { value: CircleLevel; label: string; color: string; bgColor: string; description: string }[] = [
-    { value: 'center', label: 'Centre', color: 'text-purple-700', bgColor: 'bg-purple-100', description: 'Your closest circle - family, partners' },
-    { value: 'inner', label: 'Inner', color: 'text-blue-700', bgColor: 'bg-blue-100', description: 'Close friends and trusted colleagues' },
-    { value: 'mid', label: 'Mid', color: 'text-green-700', bgColor: 'bg-green-100', description: 'Friends and regular contacts' },
+    { value: 'center', label: 'Centre', color: 'text-purple-700', bgColor: 'bg-purple-100', description: 'You only - you and your twin' },
+    { value: 'inner', label: 'Inner', color: 'text-blue-700', bgColor: 'bg-blue-100', description: 'Your closest circle - family, partners' },
+    { value: 'mid', label: 'Mid', color: 'text-green-700', bgColor: 'bg-green-100', description: 'Close friends and trusted colleagues' },
     { value: 'outer', label: 'Outer', color: 'text-yellow-700', bgColor: 'bg-yellow-100', description: 'Acquaintances and casual contacts' },
     { value: 'public', label: 'Public', color: 'text-gray-700', bgColor: 'bg-gray-100', description: 'Anyone - public information only' },
 ];
