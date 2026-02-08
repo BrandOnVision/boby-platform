@@ -84,6 +84,7 @@ export default function NurturePage() {
     } | null>(null);
     const [showSeedReviewModal, setShowSeedReviewModal] = useState(false);
     const [seedActionLoading, setSeedActionLoading] = useState(false);
+    const [seedReviewCircles, setSeedReviewCircles] = useState<Set<CircleLevel>>(new Set());
 
     // Fetch initial data
     useEffect(() => {
@@ -273,14 +274,29 @@ export default function NurturePage() {
     // Seed review handlers
     function handleSeedClick(seed: { id: string; question: string; answer: string; circle_level: string; review_reason?: string }) {
         setSelectedSeed(seed);
+        // Pre-select the circle the seed was generated from
+        setSeedReviewCircles(new Set([seed.circle_level as CircleLevel]));
         setShowSeedReviewModal(true);
     }
 
+    function toggleSeedReviewCircle(circle: CircleLevel) {
+        setSeedReviewCircles(prev => {
+            const next = new Set(prev);
+            if (next.has(circle)) {
+                next.delete(circle);
+            } else {
+                next.add(circle);
+            }
+            return next;
+        });
+    }
+
     async function handleApproveSeed() {
-        if (!selectedSeed) return;
+        if (!selectedSeed || seedReviewCircles.size === 0) return;
         setSeedActionLoading(true);
         try {
             const token = localStorage.getItem('boby_kaksos_token');
+            const circlesArray = Array.from(seedReviewCircles);
             const response = await fetch(`https://kaksos.getboby.ai/api/nurture/seed/${selectedSeed.id}/approve`, {
                 method: 'POST',
                 headers: {
@@ -289,11 +305,15 @@ export default function NurturePage() {
                     'X-Boby-Place-Id': bobyPlaceId,
                     'X-User-Id': user?.id || '',
                 },
-                body: JSON.stringify({ circleLevel: selectedSeed.circle_level }),
+                body: JSON.stringify({
+                    circleLevel: circlesArray[0],
+                    circles: circlesArray,
+                }),
             });
             if (response.ok) {
                 setShowSeedReviewModal(false);
                 setSelectedSeed(null);
+                setSeedReviewCircles(new Set());
                 // Refresh pending seeds
                 const pendingRes = await nurtureApi.getPendingSeeds(bobyPlaceId);
                 setPendingSeeds(pendingRes);
@@ -958,6 +978,7 @@ export default function NurturePage() {
                                 onClick={() => {
                                     setShowSeedReviewModal(false);
                                     setSelectedSeed(null);
+                                    setSeedReviewCircles(new Set());
                                 }}
                                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
                             >
@@ -986,6 +1007,41 @@ export default function NurturePage() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Circle Selection for Seed Review */}
+                        <div className="px-4 pb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Select which circles should have access to this knowledge:
+                            </label>
+                            <p className="text-xs text-gray-500 mb-3">
+                                Select any combination, each circle stores separately
+                            </p>
+                            <div className="space-y-2">
+                                {CIRCLES.map(circle => (
+                                    <label
+                                        key={circle.value}
+                                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${seedReviewCircles.has(circle.value)
+                                            ? `${circle.bgColor} border-current ${circle.color}`
+                                            : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={seedReviewCircles.has(circle.value)}
+                                            onChange={() => toggleSeedReviewCircle(circle.value)}
+                                            className="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                                        />
+                                        <div className="flex-1">
+                                            <span className={`font-medium ${seedReviewCircles.has(circle.value) ? circle.color : 'text-gray-800'}`}>
+                                                {circle.label}
+                                            </span>
+                                            <p className="text-xs text-gray-500 mt-0.5">{circle.description}</p>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
                         <div className="p-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-3 safe-area-bottom">
                             <button
                                 onClick={handleTestSeed}
@@ -1006,7 +1062,7 @@ export default function NurturePage() {
                                 </button>
                                 <button
                                     onClick={handleApproveSeed}
-                                    disabled={seedActionLoading}
+                                    disabled={seedActionLoading || seedReviewCircles.size === 0}
                                     className="flex-1 sm:flex-none px-4 py-3 sm:py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {seedActionLoading ? (
@@ -1016,7 +1072,12 @@ export default function NurturePage() {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                         </svg>
                                     )}
-                                    Approve
+                                    <span className="hidden sm:inline">
+                                        Approve to {seedReviewCircles.size} Circle{seedReviewCircles.size !== 1 ? 's' : ''}
+                                    </span>
+                                    <span className="sm:hidden">
+                                        Approve ({seedReviewCircles.size})
+                                    </span>
                                 </button>
                             </div>
                         </div>
