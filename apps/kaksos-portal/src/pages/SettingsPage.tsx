@@ -1,6 +1,7 @@
 /**
  * Kaksos Portal - Settings Page
- * Configure AI Twin personality, behavior, model, and API settings
+ * Configure AI Twin name, custom instructions, and API settings
+ * Personality emerges from training, not checkboxes
  */
 
 import { useState, useEffect } from 'react';
@@ -8,31 +9,6 @@ import { useAuth } from '../context/AuthContext';
 import { settingsApi, KaksosSettings } from '../lib/api';
 import DashboardLayout from '../components/DashboardLayout';
 import SowingWizard from '../components/SowingWizard';
-
-// Communication style options (must match API validation)
-const COMMUNICATION_STYLES = [
-    { value: 'professional_friendly', label: 'Professional & Friendly', description: 'Balanced tone for business and personal' },
-    { value: 'casual_relaxed', label: 'Casual & Relaxed', description: 'Friendly and conversational' },
-    { value: 'strictly_formal', label: 'Strictly Formal', description: 'Professional and precise' },
-];
-
-// Response length options (must match API validation)
-const RESPONSE_LENGTHS = [
-    { value: 'concise', label: 'Concise', description: 'Brief, to-the-point responses' },
-    { value: 'detailed', label: 'Detailed', description: 'Comprehensive explanations' },
-];
-
-// Proactiveness options (must match API validation)
-const PROACTIVENESS_LEVELS = [
-    { value: 'responsive_only', label: 'Responsive Only', description: 'Only responds when asked' },
-    { value: 'suggestive', label: 'Suggestive', description: 'Offers helpful suggestions' },
-];
-
-// Model options (must match API validation)
-const MODEL_OPTIONS = [
-    { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4', description: 'Best balance of speed and intelligence' },
-    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku', description: 'Fastest responses, great for simple tasks' },
-];
 
 // Character limit for custom instructions
 const CUSTOM_INSTRUCTIONS_MAX = 8000;
@@ -47,20 +23,25 @@ export default function SettingsPage() {
 
     // Form state
     const [kaksosName, setKaksosName] = useState('');
-    const [communicationStyle, setCommunicationStyle] = useState('professional_friendly');
-    const [responseLength, setResponseLength] = useState('concise');
-    const [proactiveness, setProactiveness] = useState('suggestive');
     const [customInstructions, setCustomInstructions] = useState('');
-    const [preferredModel, setPreferredModel] = useState('claude-sonnet-4-20250514');
+    const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-20250514');
 
-    // API Key testing state
-    const [testQuestion, setTestQuestion] = useState('Hello! Can you introduce yourself?');
-    const [testResponse, setTestResponse] = useState<string | null>(null);
-    const [isTesting, setIsTesting] = useState(false);
-    const [testError, setTestError] = useState<string | null>(null);
+    // Chat limits state
+    const [publicChatEnabled, setPublicChatEnabled] = useState(true);
+    const [publicChatDailyMessages, setPublicChatDailyMessages] = useState(50);
+    const [publicChatDailyTokens, setPublicChatDailyTokens] = useState(50000);
+    const [publicChatLimitAction, setPublicChatLimitAction] = useState<'polite_decline' | 'redirect_to_owner'>('polite_decline');
+    const [memberChatEnabled, setMemberChatEnabled] = useState(true);
+    const [memberChatDailyMessages, setMemberChatDailyMessages] = useState(200);
+    const [memberChatDailyTokens, setMemberChatDailyTokens] = useState(200000);
 
-    // Sowing wizard state
-    const [showSowingWizard, setShowSowingWizard] = useState(false);
+    // Available Claude models
+    const CLAUDE_MODELS = [
+        { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku - $0.80/$4.00 per million tokens (Fastest, Cheapest)' },
+        { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 - $3.00/$15.00 per million tokens (Balanced)' },
+        { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet - $3.00/$15.00 per million tokens (Previous gen)' },
+        { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus - $15.00/$75.00 per million tokens (Most capable)' },
+    ];
 
     // API Key management state
     const [hasApiKey, setHasApiKey] = useState(false);
@@ -71,7 +52,16 @@ export default function SettingsPage() {
     const [isRemovingApiKey, setIsRemovingApiKey] = useState(false);
     const [apiKeyMessage, setApiKeyMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    // Get the user's bobyPlaceId (using their id as the place for now)
+    // Sowing Wizard modal state
+    const [showSowingModal, setShowSowingModal] = useState(false);
+
+    // Preview testing state
+    const [previewQuestion, setPreviewQuestion] = useState('Who are you and what do you do?');
+    const [previewResponse, setPreviewResponse] = useState<string | null>(null);
+    const [isTestingPreview, setIsTestingPreview] = useState(false);
+    const [previewError, setPreviewError] = useState<string | null>(null);
+
+    // Get the user's bobyPlaceId
     const bobyPlaceId = user?.id || '';
 
     // Fetch settings on mount
@@ -88,11 +78,17 @@ export default function SettingsPage() {
 
                 // Populate form
                 setKaksosName(response.settings.kaksos_name || '');
-                setCommunicationStyle(response.settings.communication_style || 'professional_friendly');
-                setResponseLength(response.settings.response_length || 'concise');
-                setProactiveness(response.settings.proactiveness || 'suggestive');
                 setCustomInstructions(response.settings.custom_instructions || '');
-                setPreferredModel(response.settings.preferred_model || 'claude-sonnet-4-20250514');
+                setSelectedModel(response.settings.preferred_model || 'claude-sonnet-4-20250514');
+
+                // Populate chat limits
+                setPublicChatEnabled(response.settings.public_chat_enabled ?? true);
+                setPublicChatDailyMessages(response.settings.public_chat_daily_messages ?? 50);
+                setPublicChatDailyTokens(response.settings.public_chat_daily_tokens ?? 50000);
+                setPublicChatLimitAction(response.settings.public_chat_limit_action ?? 'polite_decline');
+                setMemberChatEnabled(response.settings.member_chat_enabled ?? true);
+                setMemberChatDailyMessages(response.settings.member_chat_daily_messages ?? 200);
+                setMemberChatDailyTokens(response.settings.member_chat_daily_tokens ?? 200000);
 
                 // Populate API key status
                 setHasApiKey(response.has_api_key || false);
@@ -123,12 +119,21 @@ export default function SettingsPage() {
 
         try {
             await settingsApi.saveSettings(bobyPlaceId, {
-                kaksos_name: kaksosName,
-                communication_style: communicationStyle,
-                response_length: responseLength,
-                proactiveness: proactiveness,
+                // Note: kaksos_name is read-only, set in MeMe Vault
                 custom_instructions: customInstructions,
-                preferred_model: preferredModel,
+                // Keep defaults for removed fields
+                communication_style: 'professional_friendly',
+                response_length: 'detailed',
+                proactiveness: 'suggestive',
+                preferred_model: selectedModel,
+                // Chat limits
+                public_chat_enabled: publicChatEnabled,
+                public_chat_daily_messages: publicChatDailyMessages,
+                public_chat_daily_tokens: publicChatDailyTokens,
+                public_chat_limit_action: publicChatLimitAction,
+                member_chat_enabled: memberChatEnabled,
+                member_chat_daily_messages: memberChatDailyMessages,
+                member_chat_daily_tokens: memberChatDailyTokens,
             });
 
             setSuccessMessage('Settings saved successfully!');
@@ -138,37 +143,6 @@ export default function SettingsPage() {
             setError(err instanceof Error ? err.message : 'Failed to save settings');
         } finally {
             setIsSaving(false);
-        }
-    }
-
-    // Handle test connection
-    async function handleTestConnection() {
-        if (!testQuestion.trim()) {
-            setTestError('Please enter a test question');
-            return;
-        }
-
-        setIsTesting(true);
-        setTestError(null);
-        setTestResponse(null);
-
-        try {
-            const result = await settingsApi.testPreview({
-                boby_place_id: bobyPlaceId,
-                kaksos_name: kaksosName,
-                communication_style: communicationStyle,
-                response_length: responseLength,
-                proactiveness: proactiveness,
-                custom_instructions: customInstructions,
-                test_question: testQuestion,
-            });
-
-            setTestResponse(result.response);
-        } catch (err) {
-            console.error('Test failed:', err);
-            setTestError(err instanceof Error ? err.message : 'Test failed');
-        } finally {
-            setIsTesting(false);
         }
     }
 
@@ -246,13 +220,40 @@ export default function SettingsPage() {
         }
     }
 
+    // Handle test preview
+    async function handleTestPreview() {
+        if (!previewQuestion.trim()) return;
+
+        setIsTestingPreview(true);
+        setPreviewError(null);
+        setPreviewResponse(null);
+
+        try {
+            const result = await settingsApi.testPreview({
+                boby_place_id: bobyPlaceId,
+                kaksos_name: kaksosName,
+                custom_instructions: customInstructions,
+                test_question: previewQuestion,
+            });
+
+            setPreviewResponse(result.response);
+        } catch (err) {
+            console.error('Failed to test preview:', err);
+            setPreviewError(err instanceof Error ? err.message : 'Failed to test Kaksos');
+        } finally {
+            setIsTestingPreview(false);
+        }
+    }
+
     return (
         <DashboardLayout>
-            <div className="p-8 max-w-4xl">
+            <div className="p-4 md:p-8 max-w-3xl">
                 {/* Page Header */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-800">Kaksos Settings</h1>
-                    <p className="text-gray-500 mt-1">Configure your AI Twin's personality and behavior</p>
+                <div className="mb-6 md:mb-8">
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-800">Settings</h1>
+                    <p className="text-gray-500 text-sm md:text-base mt-1">
+                        Configure your AI Twin
+                    </p>
                 </div>
 
                 {/* Error Message */}
@@ -277,48 +278,99 @@ export default function SettingsPage() {
                     </div>
                 ) : (
                     <form onSubmit={handleSave} className="space-y-6">
-                        {/* Help Me Get Started Banner */}
-                        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200 p-6">
-                            <div className="flex items-start gap-4">
-                                <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-800 mb-1">New to Kaksos?</h3>
-                                    <p className="text-sm text-gray-600 mb-3">
-                                        Answer the 99 Questions to help your AI Twin understand who you are.
-                                        This will generate personalized custom instructions automatically.
-                                    </p>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowSowingWizard(true)}
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-gray-800 font-medium rounded-lg hover:bg-primary-dark transition-colors"
+                        {/* 1. Kaksos Name (Read-only - set in MeMe Vault) */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
+                            <div>
+                                <span className="text-sm font-medium text-gray-700">Kaksos Name</span>
+                                <p className="text-sm text-gray-500 mt-1 mb-3">
+                                    Your AI Twin's name, set in your MeMe Personal Vault
+                                </p>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 font-medium">
+                                        {kaksosName || <span className="text-gray-400 font-normal">Not yet named</span>}
+                                    </div>
+                                    <a
+                                        href="https://getboby.ai/membership-portal.html"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-4 py-3 text-sm text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors whitespace-nowrap"
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                        </svg>
-                                        Help Me Get Started
-                                    </button>
+                                        Edit in MeMe Vault
+                                    </a>
                                 </div>
                             </div>
                         </div>
 
-                        {/* API Key Section */}
+                        {/* 2. Custom Instructions */}
+                        <div className="bg-white rounded-xl border border-gray-200 p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div>
+                                    <span className="text-sm font-medium text-gray-700">Custom Instructions</span>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        These instructions will be added to Kaksos's system prompt
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Help Me Get Started Button */}
+                            <div className="mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowSowingModal(true)}
+                                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-400 text-gray-800 font-medium rounded-lg hover:from-amber-500 hover:to-yellow-500 transition-all shadow-sm"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    </svg>
+                                    Help Me Get Started
+                                </button>
+                                <p className="text-xs text-gray-400 mt-2">
+                                    Answer questions to help your AI Twin understand who you are
+                                </p>
+                            </div>
+
+                            <textarea
+                                value={customInstructions}
+                                onChange={(e) => setCustomInstructions(e.target.value)}
+                                placeholder={`Guidelines for your AI Twin...
+
+Example:
+You are Bonnard, the AI twin of Brandon.
+
+About me:
+- I value honesty, patience, and care
+- I believe in sovereignty and personal freedom
+- My communication style is warm but direct
+
+When responding:
+- Speak as if you know me deeply
+- Be thoughtful and considered
+- Honor my values and perspectives`}
+                                rows={12}
+                                maxLength={CUSTOM_INSTRUCTIONS_MAX}
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors resize-none font-mono text-sm"
+                            />
+                            <div className="flex justify-end mt-2">
+                                <span className={`text-xs ${customInstructions.length > CUSTOM_INSTRUCTIONS_MAX * 0.9 ? 'text-amber-600' : 'text-gray-400'}`}>
+                                    {customInstructions.length.toLocaleString()} / {CUSTOM_INSTRUCTIONS_MAX.toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* 3. Anthropic API Key */}
                         <div className="bg-white rounded-xl border border-gray-200 p-6">
                             <div className="flex items-start justify-between mb-4">
                                 <div>
                                     <span className="text-sm font-medium text-gray-700">Anthropic API Key</span>
                                     <p className="text-sm text-gray-500 mt-1">
-                                        Your API key is encrypted and stored securely. Get your key from{' '}
+                                        Your key is encrypted and stored securely.{' '}
                                         <a
                                             href="https://console.anthropic.com/settings/keys"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline"
+                                            className="text-amber-600 hover:underline"
                                         >
-                                            console.anthropic.com
+                                            Get your key
                                         </a>
                                     </p>
                                 </div>
@@ -334,18 +386,17 @@ export default function SettingsPage() {
 
                             {/* API Key Message */}
                             {apiKeyMessage && (
-                                <div className={`mb-4 p-3 rounded-lg text-sm ${
-                                    apiKeyMessage.type === 'success'
-                                        ? 'bg-green-50 border border-green-200 text-green-700'
-                                        : 'bg-red-50 border border-red-200 text-red-700'
-                                }`}>
+                                <div className={`mb-4 p-3 rounded-lg text-sm ${apiKeyMessage.type === 'success'
+                                    ? 'bg-green-50 border border-green-200 text-green-700'
+                                    : 'bg-red-50 border border-red-200 text-red-700'
+                                    }`}>
                                     {apiKeyMessage.text}
                                 </div>
                             )}
 
                             {hasApiKey ? (
-                                /* Show current key preview and actions */
                                 <div className="space-y-4">
+                                    {/* Key preview */}
                                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                         <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -353,12 +404,13 @@ export default function SettingsPage() {
                                         <code className="text-sm font-mono text-gray-600">{apiKeyPreview || 'sk-ant-...****'}</code>
                                     </div>
 
+                                    {/* Action buttons */}
                                     <div className="flex flex-wrap gap-3">
                                         <button
                                             type="button"
                                             onClick={handleTestApiKey}
                                             disabled={isTestingApiKey}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
+                                            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
                                         >
                                             {isTestingApiKey ? (
                                                 <>
@@ -379,7 +431,7 @@ export default function SettingsPage() {
                                             type="button"
                                             onClick={handleRemoveApiKey}
                                             disabled={isRemovingApiKey}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                                            className="min-h-[44px] inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                                         >
                                             {isRemovingApiKey ? (
                                                 <>
@@ -397,7 +449,7 @@ export default function SettingsPage() {
                                         </button>
                                     </div>
 
-                                    {/* Option to replace key */}
+                                    {/* Replace key option */}
                                     <div className="pt-4 border-t border-gray-200">
                                         <p className="text-xs text-gray-500 mb-2">Replace with a new key:</p>
                                         <div className="flex gap-2">
@@ -406,13 +458,13 @@ export default function SettingsPage() {
                                                 value={newApiKey}
                                                 onChange={(e) => setNewApiKey(e.target.value)}
                                                 placeholder="sk-ant-..."
-                                                className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                                                className="flex-1 min-h-[44px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={handleSaveApiKey}
                                                 disabled={isSavingApiKey || !newApiKey.trim()}
-                                                className="px-4 py-2 bg-primary text-gray-800 font-medium rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                                                className="min-h-[44px] px-4 py-2 bg-primary text-gray-800 font-medium rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
                                             >
                                                 {isSavingApiKey ? 'Saving...' : 'Save'}
                                             </button>
@@ -420,7 +472,6 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             ) : (
-                                /* No key configured - show input */
                                 <div className="space-y-4">
                                     <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                                         <div className="flex gap-3">
@@ -430,7 +481,7 @@ export default function SettingsPage() {
                                             <div>
                                                 <p className="text-sm font-medium text-amber-800">API Key Required</p>
                                                 <p className="text-sm text-amber-700 mt-1">
-                                                    To use Kaksos, you need to provide your own Anthropic API key. Your key is encrypted and never stored in plaintext.
+                                                    To use Kaksos, you need to provide your own Anthropic API key.
                                                 </p>
                                             </div>
                                         </div>
@@ -442,13 +493,13 @@ export default function SettingsPage() {
                                             value={newApiKey}
                                             onChange={(e) => setNewApiKey(e.target.value)}
                                             placeholder="sk-ant-api03-..."
-                                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                                            className="flex-1 min-h-[44px] px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                                         />
                                         <button
                                             type="button"
                                             onClick={handleSaveApiKey}
                                             disabled={isSavingApiKey || !newApiKey.trim()}
-                                            className="px-6 py-3 bg-primary text-gray-800 font-semibold rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                                            className="min-h-[44px] px-6 py-3 bg-primary text-gray-800 font-semibold rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
                                         >
                                             {isSavingApiKey ? (
                                                 <div className="flex items-center gap-2">
@@ -464,300 +515,251 @@ export default function SettingsPage() {
                             )}
                         </div>
 
-                        {/* Kaksos Name */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <label className="block">
-                                <span className="text-sm font-medium text-gray-700">Kaksos Name</span>
-                                <p className="text-sm text-gray-500 mt-1 mb-3">
-                                    What should your AI Twin be called?
-                                </p>
-                                <input
-                                    type="text"
-                                    value={kaksosName}
-                                    onChange={(e) => setKaksosName(e.target.value)}
-                                    placeholder="e.g., Bonnard, Alex, My Assistant"
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
-                                />
-                            </label>
-                        </div>
-
-                        {/* Custom Instructions - Prominent Section */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <div className="flex items-start justify-between mb-3">
-                                <div>
-                                    <span className="text-sm font-medium text-gray-700">Custom Instructions</span>
+                        {/* 4. Model Selection - only show if API key configured */}
+                        {hasApiKey && (
+                            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                                <div className="mb-4">
+                                    <span className="text-sm font-medium text-gray-700">Claude Model</span>
                                     <p className="text-sm text-gray-500 mt-1">
-                                        Define your AI Twin's personality, knowledge, and behavior. Be specific about who you are,
-                                        what you do, and how your Kaksos should represent you.
+                                        Per-token input/output costs per million tokens. Choose based on your API key tier.
                                     </p>
                                 </div>
-                            </div>
-                            <textarea
-                                value={customInstructions}
-                                onChange={(e) => setCustomInstructions(e.target.value)}
-                                placeholder={`Example:
-You are [Kaksos Name], the AI twin of [Your Name].
 
-About me:
-- I'm a [profession] based in [location]
-- I specialize in [areas of expertise]
-- My communication style is [describe]
+                                <select
+                                    value={selectedModel}
+                                    onChange={(e) => setSelectedModel(e.target.value)}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors bg-white"
+                                >
+                                    {CLAUDE_MODELS.map((model) => (
+                                        <option key={model.value} value={model.value}>
+                                            {model.label}
+                                        </option>
+                                    ))}
+                                </select>
 
-Key facts:
-- [Important fact 1]
-- [Important fact 2]
-
-When responding:
-- Always use [language preferences]
-- Be [personality traits]
-- Never [things to avoid]`}
-                                rows={12}
-                                maxLength={CUSTOM_INSTRUCTIONS_MAX}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors resize-none font-mono text-sm"
-                            />
-                            <div className="flex justify-between items-center mt-2">
-                                <p className="text-xs text-gray-400">
-                                    Tip: The more detailed your instructions, the better your Kaksos will represent you.
+                                <p className="text-xs text-gray-400 mt-2">
+                                    <a
+                                        href="https://docs.anthropic.com/en/docs/about-claude/models"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-amber-600 hover:underline"
+                                    >
+                                        View Claude model comparison →
+                                    </a>
                                 </p>
-                                <span className={`text-xs ${customInstructions.length > CUSTOM_INSTRUCTIONS_MAX * 0.9 ? 'text-amber-600' : 'text-gray-400'}`}>
-                                    {customInstructions.length.toLocaleString()} / {CUSTOM_INSTRUCTIONS_MAX.toLocaleString()}
-                                </span>
                             </div>
-                        </div>
+                        )}
 
-                        {/* Model Selection */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <span className="text-sm font-medium text-gray-700">AI Model</span>
-                            <p className="text-sm text-gray-500 mt-1 mb-4">
-                                Choose which Claude model powers your Kaksos
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {MODEL_OPTIONS.map((model) => (
-                                    <label
-                                        key={model.value}
-                                        className={`relative flex cursor-pointer rounded-lg border p-4 transition-colors ${
-                                            preferredModel === model.value
-                                                ? 'border-primary bg-primary-light'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="preferredModel"
-                                            value={model.value}
-                                            checked={preferredModel === model.value}
-                                            onChange={(e) => setPreferredModel(e.target.value)}
-                                            className="sr-only"
-                                        />
+                        {/* 5. Chat Limits */}
+                        {hasApiKey && (
+                            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                                <div className="mb-6">
+                                    <span className="text-sm font-medium text-gray-700">Chat Limits</span>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Control how much energy your Kaksos spends on conversations each day
+                                    </p>
+                                </div>
+
+                                {/* Public Chat Limits */}
+                                <div className="mb-6 pb-6 border-b border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
                                         <div>
-                                            <span className="block text-sm font-medium text-gray-800">
-                                                {model.label}
-                                            </span>
-                                            <span className="block text-xs text-gray-500 mt-1">
-                                                {model.description}
-                                            </span>
+                                            <h4 className="text-sm font-medium text-gray-800">Public Chat</h4>
+                                            <p className="text-xs text-gray-500">Visitors who find your Kaksos via TelePathCode</p>
                                         </div>
-                                        {preferredModel === model.value && (
-                                            <svg
-                                                className="absolute top-4 right-4 w-5 h-5 text-primary-dark"
-                                                fill="currentColor"
-                                                viewBox="0 0 20 20"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                        )}
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setPublicChatEnabled(!publicChatEnabled)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                                publicChatEnabled ? 'bg-amber-400' : 'bg-gray-300'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                publicChatEnabled ? 'translate-x-6' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
 
-                        {/* Communication Style */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <span className="text-sm font-medium text-gray-700">Communication Style</span>
-                            <p className="text-sm text-gray-500 mt-1 mb-4">
-                                How should your Kaksos communicate?
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                {COMMUNICATION_STYLES.map((style) => (
-                                    <label
-                                        key={style.value}
-                                        className={`relative flex cursor-pointer rounded-lg border p-4 transition-colors ${
-                                            communicationStyle === style.value
-                                                ? 'border-primary bg-primary-light'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="communicationStyle"
-                                            value={style.value}
-                                            checked={communicationStyle === style.value}
-                                            onChange={(e) => setCommunicationStyle(e.target.value)}
-                                            className="sr-only"
-                                        />
-                                        <div>
-                                            <span className="block text-sm font-medium text-gray-800">
-                                                {style.label}
-                                            </span>
-                                            <span className="block text-xs text-gray-500 mt-1">
-                                                {style.description}
-                                            </span>
+                                    {publicChatEnabled && (
+                                        <div className="space-y-3 pl-0">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">Daily messages</label>
+                                                    <input
+                                                        type="number"
+                                                        value={publicChatDailyMessages}
+                                                        onChange={e => setPublicChatDailyMessages(parseInt(e.target.value) || 0)}
+                                                        min={0}
+                                                        max={10000}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">Daily token budget</label>
+                                                    <input
+                                                        type="number"
+                                                        value={publicChatDailyTokens}
+                                                        onChange={e => setPublicChatDailyTokens(parseInt(e.target.value) || 0)}
+                                                        min={0}
+                                                        max={10000000}
+                                                        step={1000}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs text-gray-500 mb-1">When limit reached</label>
+                                                <select
+                                                    value={publicChatLimitAction}
+                                                    onChange={e => setPublicChatLimitAction(e.target.value as 'polite_decline' | 'redirect_to_owner')}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm bg-white"
+                                                >
+                                                    <option value="polite_decline">Polite decline — "Try again tomorrow"</option>
+                                                    <option value="redirect_to_owner">Redirect — "Contact my owner directly"</option>
+                                                </select>
+                                            </div>
                                         </div>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
+                                    )}
+                                </div>
 
-                        {/* Response Length */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <span className="text-sm font-medium text-gray-700">Response Length</span>
-                            <p className="text-sm text-gray-500 mt-1 mb-4">
-                                How detailed should responses be?
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {RESPONSE_LENGTHS.map((length) => (
-                                    <label
-                                        key={length.value}
-                                        className={`relative flex cursor-pointer rounded-lg border p-4 transition-colors ${
-                                            responseLength === length.value
-                                                ? 'border-primary bg-primary-light'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="responseLength"
-                                            value={length.value}
-                                            checked={responseLength === length.value}
-                                            onChange={(e) => setResponseLength(e.target.value)}
-                                            className="sr-only"
-                                        />
-                                        <div>
-                                            <span className="block text-sm font-medium text-gray-800">
-                                                {length.label}
-                                            </span>
-                                            <span className="block text-xs text-gray-500 mt-1">
-                                                {length.description}
-                                            </span>
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Proactiveness */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <span className="text-sm font-medium text-gray-700">Proactiveness</span>
-                            <p className="text-sm text-gray-500 mt-1 mb-4">
-                                How proactive should your Kaksos be?
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {PROACTIVENESS_LEVELS.map((level) => (
-                                    <label
-                                        key={level.value}
-                                        className={`relative flex cursor-pointer rounded-lg border p-4 transition-colors ${
-                                            proactiveness === level.value
-                                                ? 'border-primary bg-primary-light'
-                                                : 'border-gray-200 hover:border-gray-300'
-                                        }`}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="proactiveness"
-                                            value={level.value}
-                                            checked={proactiveness === level.value}
-                                            onChange={(e) => setProactiveness(e.target.value)}
-                                            className="sr-only"
-                                        />
-                                        <div>
-                                            <span className="block text-sm font-medium text-gray-800">
-                                                {level.label}
-                                            </span>
-                                            <span className="block text-xs text-gray-500 mt-1">
-                                                {level.description}
-                                            </span>
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Test Your Settings */}
-                        <div className="bg-white rounded-xl border border-gray-200 p-6">
-                            <span className="text-sm font-medium text-gray-700">Test Your Settings</span>
-                            <p className="text-sm text-gray-500 mt-1 mb-4">
-                                Send a test message to see how your Kaksos responds with the current settings
-                            </p>
-
-                            <div className="space-y-4">
+                                {/* Member Chat Limits */}
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-600 mb-2">Test Question</label>
-                                    <input
-                                        type="text"
-                                        value={testQuestion}
-                                        onChange={(e) => setTestQuestion(e.target.value)}
-                                        placeholder="Enter a test question..."
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
-                                    />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h4 className="text-sm font-medium text-gray-800">Member Chat</h4>
+                                            <p className="text-xs text-gray-500">Circle members chatting with your Kaksos</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setMemberChatEnabled(!memberChatEnabled)}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                                memberChatEnabled ? 'bg-amber-400' : 'bg-gray-300'
+                                            }`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                memberChatEnabled ? 'translate-x-6' : 'translate-x-1'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    {memberChatEnabled && (
+                                        <div className="space-y-3 pl-0">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">Daily messages</label>
+                                                    <input
+                                                        type="number"
+                                                        value={memberChatDailyMessages}
+                                                        onChange={e => setMemberChatDailyMessages(parseInt(e.target.value) || 0)}
+                                                        min={0}
+                                                        max={10000}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">Daily token budget</label>
+                                                    <input
+                                                        type="number"
+                                                        value={memberChatDailyTokens}
+                                                        onChange={e => setMemberChatDailyTokens(parseInt(e.target.value) || 0)}
+                                                        min={0}
+                                                        max={10000000}
+                                                        step={1000}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 6. Preview Section */}
+                        {hasApiKey && kaksosName && (
+                            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                                <div className="mb-4">
+                                    <span className="text-sm font-medium text-gray-700">Test Your Kaksos</span>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        See how {kaksosName} responds with your current settings
+                                    </p>
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-xs text-gray-500 mb-2 uppercase tracking-wider">
+                                        Select a Question
+                                    </label>
+                                    <select
+                                        value={previewQuestion}
+                                        onChange={(e) => {
+                                            setPreviewQuestion(e.target.value);
+                                            setPreviewResponse(null);
+                                            setPreviewError(null);
+                                        }}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors bg-white text-sm"
+                                    >
+                                        <option value="Who are you and what do you do?">Who are you and what do you do?</option>
+                                        <option value="What are your values?">What are your values?</option>
+                                        <option value="How should I introduce you to others?">How should I introduce you to others?</option>
+                                        <option value="What makes you different?">What makes you different?</option>
+                                        <option value="Tell me about yourself.">Tell me about yourself.</option>
+                                    </select>
                                 </div>
 
                                 <button
                                     type="button"
-                                    onClick={handleTestConnection}
-                                    disabled={isTesting}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-info text-white font-medium rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    onClick={handleTestPreview}
+                                    disabled={isTestingPreview}
+                                    className="w-full min-h-[48px] px-6 py-3 bg-gradient-to-r from-amber-400 to-yellow-400 text-gray-800 font-semibold rounded-lg hover:from-amber-500 hover:to-yellow-500 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    {isTesting ? (
+                                    {isTestingPreview ? (
                                         <>
-                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            <div className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin" />
                                             Testing...
                                         </>
                                     ) : (
-                                        <>
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                            </svg>
-                                            Test Connection
-                                        </>
+                                        'Test Your Kaksos'
                                     )}
                                 </button>
 
-                                {/* Test Error */}
-                                {testError && (
-                                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                                        {testError}
+                                {/* Preview Error */}
+                                {previewError && (
+                                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                                        {previewError}
                                     </div>
                                 )}
 
-                                {/* Test Response */}
-                                {testResponse && (
-                                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                                {/* Preview Response */}
+                                {previewResponse && (
+                                    <div className="mt-4">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                                                 <span className="text-xs font-semibold text-gray-800">
-                                                    {kaksosName?.charAt(0)?.toUpperCase() || 'K'}
+                                                    {kaksosName.charAt(0).toUpperCase()}
                                                 </span>
                                             </div>
-                                            <span className="text-sm font-medium text-gray-700">
-                                                {kaksosName || 'Kaksos'}
-                                            </span>
+                                            <span className="text-sm font-medium text-gray-700">{kaksosName}</span>
                                         </div>
-                                        <p className="text-sm text-gray-600 whitespace-pre-wrap">{testResponse}</p>
+                                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{previewResponse}</p>
+                                        </div>
                                     </div>
                                 )}
+
+                                {!previewResponse && !previewError && !isTestingPreview && (
+                                    <p className="text-center text-xs text-gray-400 mt-3">
+                                        Click the button to see how your Kaksos responds
+                                    </p>
+                                )}
                             </div>
-                        </div>
+                        )}
 
                         {/* Save Button */}
-                        <div className="flex justify-end gap-4 pt-4">
+                        <div className="flex justify-end pt-4">
                             <button
                                 type="submit"
                                 disabled={isSaving}
-                                className="px-6 py-3 bg-primary hover:bg-primary-dark text-gray-800 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className="min-h-[48px] px-8 py-3 bg-primary hover:bg-primary-dark text-gray-800 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isSaving ? (
                                     <>
@@ -776,22 +778,21 @@ When responding:
                         </div>
                     </form>
                 )}
-
-                {/* Sowing Wizard Modal */}
-                <SowingWizard
-                    isOpen={showSowingWizard}
-                    onClose={() => setShowSowingWizard(false)}
-                    bobyPlaceId={bobyPlaceId}
-                    onComplete={(result) => {
-                        // Update custom instructions if provided
-                        if (result.instructions) {
-                            setCustomInstructions(result.instructions);
-                            setSuccessMessage(`Sowing complete! ${result.seedCount || 0} seeds planted. Custom instructions updated.`);
-                            setTimeout(() => setSuccessMessage(null), 5000);
-                        }
-                    }}
-                />
             </div>
+
+            {/* Sowing Wizard Modal */}
+            <SowingWizard
+                isOpen={showSowingModal}
+                onClose={() => setShowSowingModal(false)}
+                bobyPlaceId={bobyPlaceId}
+                onComplete={(result) => {
+                    if (result.instructions) {
+                        setCustomInstructions(result.instructions);
+                        setSuccessMessage('Custom instructions generated from your answers!');
+                        setTimeout(() => setSuccessMessage(null), 5000);
+                    }
+                }}
+            />
         </DashboardLayout>
     );
 }
