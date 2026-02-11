@@ -229,6 +229,14 @@ export interface KaksosSettings {
     custom_instructions: string;
     value_framework: string | null;
     preferred_model: string;
+    // Chat limits
+    public_chat_enabled: boolean;
+    public_chat_daily_messages: number;
+    public_chat_daily_tokens: number;
+    public_chat_limit_action: 'polite_decline' | 'redirect_to_owner';
+    member_chat_enabled: boolean;
+    member_chat_daily_messages: number;
+    member_chat_daily_tokens: number;
 }
 
 export interface SettingsResponse {
@@ -1132,13 +1140,17 @@ export interface CircleMemberResponse {
 
 export interface CircleLookupResponse {
     success: boolean;
-    exists: boolean;
+    alreadyInCircle: boolean;
+    found?: boolean;
     member?: CircleMember;
     peeler?: {
         id: string;
+        telepathcode?: string;
         email: string;
         name: string | null;
-    };
+        kaksos_name?: string | null;
+        legal_name?: string | null;
+    } | null;
     message?: string;
 }
 
@@ -1702,6 +1714,34 @@ export const watchGrowApi = {
 
         return response.json();
     },
+
+    /**
+     * Delete a seed (uproot) - only works for seeds not yet at 100%
+     */
+    async deleteSeed(bobyPlaceId: string, seedId: string): Promise<{ success: boolean; message: string }> {
+        const token = getToken();
+
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+
+        const response = await fetch(`${KAKSOS_API_URL}/api/watch-grow/seeds/${seedId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-Boby-Place-Id': bobyPlaceId,
+                'X-User-Id': getStoredUser()?.id || '',
+            },
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: 'Unknown error' }));
+            throw new Error(error.message || `Failed to uproot seed: ${response.status}`);
+        }
+
+        return response.json();
+    },
 };
 
 export const nurtureApi = {
@@ -1864,6 +1904,195 @@ export const nurtureApi = {
 
         if (!response.ok) {
             throw new Error(`Failed to fetch circle members: ${response.status}`);
+        }
+
+        return response.json();
+    },
+};
+
+// ============================================
+// PUBLIC CHAT TYPES (No Auth Required)
+// ============================================
+
+export interface PublicKaksosInfo {
+    peelerId: string;
+    bobyPlaceId: string;
+    kaksosName: string;
+    ownerName: string;
+}
+
+export interface PublicLookupResponse {
+    success: boolean;
+    error?: string;
+    kaksos?: PublicKaksosInfo;
+}
+
+export interface PublicChatMessage {
+    sender: 'user' | 'kaksos';
+    text: string;
+    timestamp: Date;
+}
+
+export interface PublicChatResponse {
+    success: boolean;
+    response?: string;
+    error?: string;
+}
+
+// ============================================
+// MEMBER CHAT TYPES (JWT Auth Required)
+// ============================================
+
+export interface MemberChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: string;
+}
+
+export interface MemberChatConversation {
+    id: string;
+    memberName: string;
+    memberCircle: CircleLevel;
+    messages: MemberChatMessage[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface MemberChatHistoryResponse {
+    success: boolean;
+    conversations: MemberChatConversation[];
+}
+
+export interface MemberChatSendResponse {
+    success: boolean;
+    response?: string;
+    conversationId?: string;
+    memberName?: string;
+    memberCircle?: string;
+    sourceType?: string;
+    limitReached?: boolean;
+    error?: string;
+}
+
+// ============================================
+// PUBLIC CHAT API (No Auth Required)
+// ============================================
+
+export const publicChatApi = {
+    /**
+     * Look up a Kaksos by TelePathCode
+     */
+    async lookup(code: string): Promise<PublicLookupResponse> {
+        const response = await fetch(`${KAKSOS_API_URL}/api/public/kaksos-lookup?code=${encodeURIComponent(code)}`, {
+            headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Lookup failed: ${response.status}`);
+        }
+
+        return response.json();
+    },
+
+    /**
+     * Send a message to a Kaksos (public chat)
+     */
+    async sendMessage(params: {
+        bobyPlaceId: string;
+        sessionId: string;
+        visitorName?: string;
+        visitorEmail?: string;
+        message: string;
+        conversationHistory?: PublicChatMessage[];
+    }): Promise<PublicChatResponse> {
+        const response = await fetch(`${KAKSOS_API_URL}/api/public/kaksos-chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bobyPlaceId: params.bobyPlaceId,
+                sessionId: params.sessionId,
+                visitorName: params.visitorName,
+                visitorEmail: params.visitorEmail,
+                visitorCircle: 'public',
+                message: params.message,
+                conversationHistory: params.conversationHistory?.map(m => ({
+                    sender: m.sender,
+                    text: m.text,
+                })),
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+            return { success: false, error: error.error || `Chat failed: ${response.status}` };
+        }
+
+        return response.json();
+    },
+};
+
+// ============================================
+// MEMBER CHAT API (JWT Auth Required)
+// ============================================
+
+export const memberChatApi = {
+    /**
+     * Send a message as a circle member to a Kaksos
+     */
+    async send(params: {
+        bobyPlaceId: string;
+        memberPeelerId: string;
+        message: string;
+        conversationId?: string;
+    }): Promise<MemberChatSendResponse> {
+        const token = getToken();
+        if (!token) throw new Error('Authentication required');
+
+        const user = getStoredUser();
+        const response = await fetch(`${KAKSOS_API_URL}/api/member-chat/send`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-Boby-Place-Id': params.bobyPlaceId,
+                'X-User-Id': user?.id || '',
+            },
+            body: JSON.stringify({
+                memberPeelerId: params.memberPeelerId,
+                message: params.message,
+                conversationId: params.conversationId,
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+            return { success: false, error: error.error || `Send failed: ${response.status}` };
+        }
+
+        return response.json();
+    },
+
+    /**
+     * Load conversation history for a member
+     */
+    async history(bobyPlaceId: string, memberPeelerId: string): Promise<MemberChatHistoryResponse> {
+        const token = getToken();
+        if (!token) throw new Error('Authentication required');
+
+        const user = getStoredUser();
+        const params = new URLSearchParams({ memberPeelerId });
+
+        const response = await fetch(`${KAKSOS_API_URL}/api/member-chat/history?${params}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-Boby-Place-Id': bobyPlaceId,
+                'X-User-Id': user?.id || '',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch history: ${response.status}`);
         }
 
         return response.json();
