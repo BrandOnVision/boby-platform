@@ -545,6 +545,7 @@ export default function CircleManagementPage() {
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                                                             </svg>
                                                         </button>
+                                                        {member.circle_level !== 'center' && (
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleRemoveMember(member); }}
                                                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
@@ -554,6 +555,7 @@ export default function CircleManagementPage() {
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                             </svg>
                                                         </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -917,6 +919,7 @@ export default function CircleManagementPage() {
                                     </svg>
                                     Chat as {selectedMember.peeler_name || 'Member'}
                                 </button>
+                                {selectedMember.circle_level !== 'center' && (
                                 <button
                                     onClick={() => {
                                         setShowMemberModal(false);
@@ -929,6 +932,7 @@ export default function CircleManagementPage() {
                                     </svg>
                                     Remove from Circles
                                 </button>
+                                )}
                             </div>
                         </div>
                     </div>
