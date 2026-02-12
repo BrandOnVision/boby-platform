@@ -1338,6 +1338,7 @@ export interface NurturePendingSeedsResponse {
         question: string;
         answer: string;
         circle_level: string;
+        source_type: string | null;
         category: string;
         review_reason: string;
         updated_at: string;
@@ -1347,6 +1348,7 @@ export interface NurturePendingSeedsResponse {
         suggested_question: string | null;
         suggested_answer: string;
         suggested_circle: string | null;
+        source_type: string | null;
         status: string;
         created_at: string;
         correction_text: string;

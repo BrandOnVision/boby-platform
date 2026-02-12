@@ -22,6 +22,22 @@ function getCircleConfig(level: string) {
     return CIRCLES.find(c => c.value === level) || CIRCLES[4];
 }
 
+// Source type → left border colour for visual triage
+const SOURCE_TYPE_STYLES: Record<string, { border: string; text: string; label: string }> = {
+    kmky:                { border: 'border-l-amber-400',   text: 'text-amber-500',   label: 'Plant Seeds' },
+    training_simulation: { border: 'border-l-violet-500',  text: 'text-violet-500',  label: 'Training Simulation' },
+    member_chat:         { border: 'border-l-emerald-500', text: 'text-emerald-500', label: 'Member Chat' },
+    nurture_test:        { border: 'border-l-blue-500',    text: 'text-blue-500',    label: 'Nurture Test' },
+    nurture:             { border: 'border-l-blue-500',    text: 'text-blue-500',    label: 'Nurture' },
+    public_chat:         { border: 'border-l-orange-500',  text: 'text-orange-500',  label: 'Public Chat' },
+};
+const DEFAULT_SOURCE_STYLE = { border: 'border-l-gray-400', text: 'text-gray-400', label: 'Legacy' };
+
+function getSourceStyle(sourceType: string | null | undefined) {
+    if (!sourceType) return DEFAULT_SOURCE_STYLE;
+    return SOURCE_TYPE_STYLES[sourceType] || DEFAULT_SOURCE_STYLE;
+}
+
 interface CircleMember {
     id: string;
     member_user_id: string;
@@ -509,16 +525,22 @@ export default function NurturePage() {
                                     </div>
                                 ) : pendingSeeds && pendingSeeds.summary.totalNeedsAttention > 0 ? (
                                     <div className="space-y-2">
-                                        {pendingSeeds.needsReview.map(seed => (
+                                        {pendingSeeds.needsReview.map(seed => {
+                                            const src = getSourceStyle(seed.source_type);
+                                            return (
                                             <button
                                                 key={seed.id}
                                                 onClick={() => handleSeedClick(seed)}
-                                                className="w-full text-left p-2 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition-colors"
+                                                className={`w-full text-left p-2 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition-colors border-l-4 ${src.border}`}
                                             >
                                                 <p className="text-xs text-amber-800 font-medium line-clamp-1">{seed.question}</p>
+                                                <p className={`text-xs ${src.text} mt-0.5`}>via {src.label}</p>
                                             </button>
-                                        ))}
-                                        {pendingSeeds.pendingCorrections.map(corr => (
+                                            );
+                                        })}
+                                        {pendingSeeds.pendingCorrections.map(corr => {
+                                            const src = getSourceStyle(corr.source_type);
+                                            return (
                                             <button
                                                 key={corr.id}
                                                 onClick={() => handleSeedClick({
@@ -528,11 +550,13 @@ export default function NurturePage() {
                                                     circle_level: corr.suggested_circle || 'center',
                                                     review_reason: corr.correction_text,
                                                 })}
-                                                className="w-full text-left p-2 bg-orange-50 border border-orange-100 rounded-lg hover:bg-orange-100 transition-colors"
+                                                className={`w-full text-left p-2 bg-orange-50 border border-orange-100 rounded-lg hover:bg-orange-100 transition-colors border-l-4 ${src.border}`}
                                             >
                                                 <p className="text-xs text-orange-800 font-medium line-clamp-1">{corr.suggested_question || 'Correction pending'}</p>
+                                                <p className={`text-xs ${src.text} mt-0.5`}>via {src.label}</p>
                                             </button>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <div className="flex items-center justify-center py-4">
@@ -790,17 +814,23 @@ export default function NurturePage() {
                                     </div>
                                 ) : pendingSeeds && pendingSeeds.summary.totalNeedsAttention > 0 ? (
                                     <div className="space-y-2">
-                                        {pendingSeeds.needsReview.map(seed => (
+                                        {pendingSeeds.needsReview.map(seed => {
+                                            const src = getSourceStyle(seed.source_type);
+                                            return (
                                             <button
                                                 key={seed.id}
                                                 onClick={() => handleSeedClick(seed)}
-                                                className="w-full text-left p-3 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer"
+                                                className={`w-full text-left p-3 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer border-l-4 ${src.border}`}
                                             >
                                                 <p className="text-xs text-amber-800 font-medium line-clamp-1">{seed.question}</p>
+                                                <p className={`text-xs ${src.text} mt-0.5`}>via {src.label}</p>
                                                 <p className="text-xs text-amber-600 mt-1">{seed.review_reason}</p>
                                             </button>
-                                        ))}
-                                        {pendingSeeds.pendingCorrections.map(corr => (
+                                            );
+                                        })}
+                                        {pendingSeeds.pendingCorrections.map(corr => {
+                                            const src = getSourceStyle(corr.source_type);
+                                            return (
                                             <button
                                                 key={corr.id}
                                                 onClick={() => handleSeedClick({
@@ -810,12 +840,14 @@ export default function NurturePage() {
                                                     circle_level: corr.suggested_circle || 'center',
                                                     review_reason: corr.correction_text,
                                                 })}
-                                                className="w-full text-left p-3 bg-orange-50 border border-orange-100 rounded-lg hover:bg-orange-100 transition-colors cursor-pointer"
+                                                className={`w-full text-left p-3 bg-orange-50 border border-orange-100 rounded-lg hover:bg-orange-100 transition-colors cursor-pointer border-l-4 ${src.border}`}
                                             >
                                                 <p className="text-xs text-orange-800 font-medium line-clamp-1">{corr.suggested_question || 'Correction pending'}</p>
+                                                <p className={`text-xs ${src.text} mt-0.5`}>via {src.label}</p>
                                                 <p className="text-xs text-orange-600 mt-1 line-clamp-2">{corr.suggested_answer}</p>
                                             </button>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 ) : (
                                     <div className="h-full flex items-center justify-center text-center">
