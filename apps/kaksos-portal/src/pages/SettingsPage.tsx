@@ -24,7 +24,7 @@ export default function SettingsPage() {
     // Form state
     const [kaksosName, setKaksosName] = useState('');
     const [customInstructions, setCustomInstructions] = useState('');
-    const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-20250514');
+    const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-5-20250929');
 
     // Chat limits state
     const [publicChatEnabled, setPublicChatEnabled] = useState(true);
@@ -37,10 +37,8 @@ export default function SettingsPage() {
 
     // Available Claude models
     const CLAUDE_MODELS = [
-        { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku - $0.80/$4.00 per million tokens (Fastest, Cheapest)' },
-        { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4 - $3.00/$15.00 per million tokens (Balanced)' },
-        { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet - $3.00/$15.00 per million tokens (Previous gen)' },
-        { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus - $15.00/$75.00 per million tokens (Most capable)' },
+        { value: 'claude-sonnet-4-5-20250929', label: 'Claude Sonnet 4.5 - $3.00/$15.00 per million tokens (Recommended)' },
+        { value: 'claude-opus-4-6', label: 'Claude Opus 4.6 - $15.00/$75.00 per million tokens (Premium)' },
     ];
 
     // API Key management state

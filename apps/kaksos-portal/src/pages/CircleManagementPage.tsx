@@ -480,7 +480,7 @@ export default function CircleManagementPage() {
                                     {filteredMembers.map(member => {
                                         const circleConfig = getCircleConfig(member.circle_level);
                                         return (
-                                            <tr key={member.id} className="hover:bg-gray-50">
+                                            <tr key={member.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => openMemberDetail(member)}>
                                                 <td className="px-6 py-4">
                                                     <div>
                                                         <div className="font-medium text-gray-800">
@@ -524,7 +524,8 @@ export default function CircleManagementPage() {
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
-                                                            onClick={() => {
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
                                                                 setSelectedMember(member);
                                                                 setShowChatModal(true);
                                                             }}
@@ -536,7 +537,7 @@ export default function CircleManagementPage() {
                                                             </svg>
                                                         </button>
                                                         <button
-                                                            onClick={() => setEditingMember(editingMember?.id === member.id ? null : member)}
+                                                            onClick={(e) => { e.stopPropagation(); setEditingMember(editingMember?.id === member.id ? null : member); }}
                                                             className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
                                                             title="Change Circle"
                                                         >
@@ -545,7 +546,7 @@ export default function CircleManagementPage() {
                                                             </svg>
                                                         </button>
                                                         <button
-                                                            onClick={() => handleRemoveMember(member)}
+                                                            onClick={(e) => { e.stopPropagation(); handleRemoveMember(member); }}
                                                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                                             title="Remove"
                                                         >
