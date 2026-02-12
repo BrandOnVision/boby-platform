@@ -31,38 +31,17 @@ export default function MemberChatModal({
     const [conversationId, setConversationId] = useState<string | undefined>();
     const [inputText, setInputText] = useState('');
     const [isSending, setIsSending] = useState(false);
-    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Load history when modal opens
+    // Fresh conversation every time modal opens (training simulation = clean slate)
     useEffect(() => {
-        if (!isOpen || !memberPeelerId) return;
-
-        async function loadHistory() {
-            setIsLoadingHistory(true);
-            setError(null);
-            try {
-                const result = await memberChatApi.history(bobyPlaceId, memberPeelerId);
-                if (result.conversations?.length > 0) {
-                    const latest = result.conversations[0];
-                    setConversationId(latest.id);
-                    setMessages(latest.messages || []);
-                } else {
-                    setConversationId(undefined);
-                    setMessages([]);
-                }
-            } catch (err) {
-                console.error('[MemberChat] History load error:', err);
-                setMessages([]);
-            } finally {
-                setIsLoadingHistory(false);
-            }
-        }
-
-        loadHistory();
-    }, [isOpen, bobyPlaceId, memberPeelerId]);
+        if (!isOpen) return;
+        setMessages([]);
+        setConversationId(undefined);
+        setError(null);
+    }, [isOpen, memberPeelerId]);
 
     // Scroll to bottom on new messages
     useEffect(() => {
@@ -71,10 +50,10 @@ export default function MemberChatModal({
 
     // Focus input when modal opens
     useEffect(() => {
-        if (isOpen && !isLoadingHistory) {
+        if (isOpen) {
             setTimeout(() => inputRef.current?.focus(), 100);
         }
-    }, [isOpen, isLoadingHistory]);
+    }, [isOpen]);
 
     async function handleSend(e: React.FormEvent) {
         e.preventDefault();
@@ -166,11 +145,7 @@ export default function MemberChatModal({
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {isLoadingHistory ? (
-                        <div className="flex justify-center py-8">
-                            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                        </div>
-                    ) : messages.length === 0 ? (
+                    {messages.length === 0 ? (
                         <div className="text-center py-8">
                             <p className="text-gray-400 text-sm">
                                 Start a conversation as {memberName}
