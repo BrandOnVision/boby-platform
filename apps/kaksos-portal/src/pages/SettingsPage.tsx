@@ -27,11 +27,11 @@ export default function SettingsPage() {
     const [selectedModel, setSelectedModel] = useState('claude-sonnet-4-5-20250929');
 
     // Chat limits state
-    const [publicChatEnabled, setPublicChatEnabled] = useState(true);
+    const [publicChatEnabled, setPublicChatEnabled] = useState(false);
     const [publicChatDailyMessages, setPublicChatDailyMessages] = useState(50);
     const [publicChatDailyTokens, setPublicChatDailyTokens] = useState(50000);
     const [publicChatLimitAction, setPublicChatLimitAction] = useState<'polite_decline' | 'redirect_to_owner'>('polite_decline');
-    const [memberChatEnabled, setMemberChatEnabled] = useState(true);
+    const [memberChatEnabled, setMemberChatEnabled] = useState(false);
     const [memberChatDailyMessages, setMemberChatDailyMessages] = useState(200);
     const [memberChatDailyTokens, setMemberChatDailyTokens] = useState(200000);
 
@@ -77,7 +77,7 @@ export default function SettingsPage() {
                 // Populate form
                 setKaksosName(response.settings.kaksos_name || '');
                 setCustomInstructions(response.settings.custom_instructions || '');
-                setSelectedModel(response.settings.preferred_model || 'claude-sonnet-4-20250514');
+                setSelectedModel(response.settings.preferred_model || 'claude-sonnet-4-5-20250929');
 
                 // Populate chat limits
                 setPublicChatEnabled(response.settings.public_chat_enabled ?? true);
