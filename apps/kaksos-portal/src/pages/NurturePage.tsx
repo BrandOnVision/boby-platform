@@ -637,14 +637,14 @@ export default function NurturePage() {
                                             disabled={feedbackLoading}
                                             className="flex-1 sm:flex-none min-h-[44px] sm:min-h-0 px-3 py-2.5 sm:py-1.5 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
                                         >
-                                            Correct
+                                            Change
                                         </button>
                                         <button
                                             onClick={() => handleFeedback('never')}
                                             disabled={feedbackLoading}
                                             className="flex-1 sm:flex-none min-h-[44px] sm:min-h-0 px-3 py-2.5 sm:py-1.5 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                                         >
-                                            Never
+                                            Wrong
                                         </button>
                                     </div>
                                 </div>
@@ -1325,14 +1325,14 @@ export default function NurturePage() {
                                     disabled={feedbackLoading}
                                     className="flex-1 min-h-[44px] px-3 py-2.5 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors disabled:opacity-50"
                                 >
-                                    Correct
+                                    Change
                                 </button>
                                 <button
                                     onClick={() => handleFeedback('never')}
                                     disabled={feedbackLoading}
                                     className="flex-1 min-h-[44px] px-3 py-2.5 text-sm bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                                 >
-                                    Never
+                                    Wrong
                                 </button>
                             </div>
                         </div>
