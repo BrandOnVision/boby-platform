@@ -9,6 +9,7 @@ import { circlesApi, CircleMember, CircleStats, CircleLevel } from '../lib/api';
 import DashboardLayout from '../components/DashboardLayout';
 import { Html5Qrcode } from 'html5-qrcode';
 import MemberChatModal from '../components/MemberChatModal';
+import ConfirmModal from '../components/ConfirmModal';
 
 // Circle configuration
 const CIRCLES: { level: CircleLevel | 'all'; label: string; emoji: string; color: string; bgColor: string }[] = [
@@ -57,6 +58,8 @@ export default function CircleManagementPage() {
     const [selectedMember, setSelectedMember] = useState<CircleMember | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showChatModal, setShowChatModal] = useState(false);
+    const [memberToRemove, setMemberToRemove] = useState<CircleMember | null>(null);
+    const [isRemoving, setIsRemoving] = useState(false);
 
     // QR Scanner state
     const [showQrScanner, setShowQrScanner] = useState(false);
@@ -243,21 +246,23 @@ export default function CircleManagementPage() {
     }
 
     // Remove member handler
-    async function handleRemoveMember(member: CircleMember) {
-        if (!confirm(`Remove ${member.peeler_name || member.peeler_id} from your circles?`)) {
-            return;
-        }
+    async function handleRemoveMember() {
+        if (!memberToRemove) return;
+        setIsRemoving(true);
 
         try {
-            await circlesApi.removeMember(member.id, bobyPlaceId);
+            await circlesApi.removeMember(memberToRemove.id, bobyPlaceId);
 
             // Refresh list
             const response = await circlesApi.listMembers(bobyPlaceId, selectedCircle);
             setMembers(response.members);
             setStats(response.stats);
+            setMemberToRemove(null);
         } catch (err) {
             console.error('Failed to remove member:', err);
-            alert(err instanceof Error ? err.message : 'Failed to remove member');
+            setMemberToRemove(null);
+        } finally {
+            setIsRemoving(false);
         }
     }
 
@@ -547,7 +552,7 @@ export default function CircleManagementPage() {
                                                         </button>
                                                         {member.circle_level !== 'center' && (
                                                         <button
-                                                            onClick={(e) => { e.stopPropagation(); handleRemoveMember(member); }}
+                                                            onClick={(e) => { e.stopPropagation(); setMemberToRemove(member); }}
                                                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                                                             title="Remove"
                                                         >
@@ -923,7 +928,7 @@ export default function CircleManagementPage() {
                                 <button
                                     onClick={() => {
                                         setShowMemberModal(false);
-                                        handleRemoveMember(selectedMember);
+                                        setMemberToRemove(selectedMember);
                                     }}
                                     className="w-full py-3 px-4 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
                                 >
@@ -937,6 +942,18 @@ export default function CircleManagementPage() {
                         </div>
                     </div>
                 )}
+
+                {/* Remove Member Confirm Modal */}
+                <ConfirmModal
+                    isOpen={!!memberToRemove}
+                    title="Remove Member"
+                    message={`Remove ${memberToRemove?.peeler_name || memberToRemove?.peeler_id || ''} from your circles? This cannot be undone.`}
+                    confirmLabel="Remove"
+                    confirmVariant="danger"
+                    onConfirm={handleRemoveMember}
+                    onCancel={() => setMemberToRemove(null)}
+                    isLoading={isRemoving}
+                />
 
                 {/* Member Chat Modal */}
                 <MemberChatModal
