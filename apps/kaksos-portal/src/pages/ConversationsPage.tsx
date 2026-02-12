@@ -41,6 +41,29 @@ function truncate(text: string, maxLength: number): string {
     return text.substring(0, maxLength).trim() + '...';
 }
 
+// Parse multi-message JSON from the messages column
+function parseMessages(conv: Conversation): { sender: string; text: string }[] | null {
+    if (!conv.messages) return null;
+    try {
+        const parsed = JSON.parse(conv.messages);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {
+        // Invalid JSON — fall back to legacy
+    }
+    return null;
+}
+
+// Get display title for a conversation
+function getDisplayTitle(conv: Conversation): string {
+    if (conv.title) return conv.title;
+    return conv.user_message || 'Conversation';
+}
+
+// Check if a conversation is from public chat
+function isPublicChat(conv: Conversation): boolean {
+    return conv.source_type === 'public_chat';
+}
+
 export default function ConversationsPage() {
     const { user } = useAuth();
     const bobyPlaceId = user?.id || '';
@@ -125,6 +148,45 @@ export default function ConversationsPage() {
         }
     }
 
+    // Render messages for the detail view
+    function renderMessages(conv: Conversation) {
+        const multiMessages = parseMessages(conv);
+
+        if (multiMessages) {
+            // Multi-message conversation (public chat)
+            return multiMessages.map((msg, idx) => {
+                const isUser = msg.sender === 'user';
+                return (
+                    <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                            isUser
+                                ? 'bg-blue-500 text-white rounded-tr-sm'
+                                : 'bg-gray-100 text-gray-800 rounded-tl-sm'
+                        }`}>
+                            <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                        </div>
+                    </div>
+                );
+            });
+        }
+
+        // Legacy single-exchange conversation
+        return (
+            <>
+                <div className="flex justify-end">
+                    <div className="max-w-[80%] bg-blue-500 text-white rounded-2xl rounded-tr-sm px-4 py-3">
+                        <p className="text-sm whitespace-pre-wrap">{conv.user_message}</p>
+                    </div>
+                </div>
+                <div className="flex justify-start">
+                    <div className="max-w-[80%] bg-gray-100 text-gray-800 rounded-2xl rounded-tl-sm px-4 py-3">
+                        <p className="text-sm whitespace-pre-wrap">{conv.kaksos_response}</p>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     return (
         <DashboardLayout>
             <div className="p-8 h-full">
@@ -181,6 +243,7 @@ export default function ConversationsPage() {
                                 {conversations.map((conv) => {
                                     const circleStyle = CIRCLE_COLORS[conv.circle] || CIRCLE_COLORS.public;
                                     const isSelected = selectedConversation?.id === conv.id;
+                                    const isPublic = isPublicChat(conv);
 
                                     return (
                                         <div
@@ -194,8 +257,13 @@ export default function ConversationsPage() {
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div className="flex-1 min-w-0">
+                                                    {isPublic && conv.visitor_name && (
+                                                        <p className="text-xs font-medium text-orange-600 mb-0.5">
+                                                            {conv.visitor_name}
+                                                        </p>
+                                                    )}
                                                     <p className="text-sm font-medium text-gray-800 truncate">
-                                                        {truncate(conv.user_message, 60)}
+                                                        {truncate(getDisplayTitle(conv), 60)}
                                                     </p>
                                                     <p className="text-xs text-gray-500 mt-1 truncate">
                                                         {truncate(conv.kaksos_response, 80)}
@@ -205,18 +273,38 @@ export default function ConversationsPage() {
                                                     <span className="text-xs text-gray-400">
                                                         {formatDate(conv.created_at)}
                                                     </span>
-                                                    <span className={`text-xs px-2 py-0.5 rounded ${circleStyle.bg} ${circleStyle.text}`}>
-                                                        {conv.circle}
-                                                    </span>
+                                                    <div className="flex items-center gap-1">
+                                                        {isPublic && (
+                                                            <span className="text-xs px-2 py-0.5 rounded bg-orange-100 text-orange-700">
+                                                                Public Chat
+                                                            </span>
+                                                        )}
+                                                        <span className={`text-xs px-2 py-0.5 rounded ${circleStyle.bg} ${circleStyle.text}`}>
+                                                            {conv.circle}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
-                                                <span title="Input tokens">{conv.tokens_input} in</span>
-                                                <span title="Output tokens">{conv.tokens_output} out</span>
-                                                {conv.cost > 0 && (
-                                                    <span title="Cost">${conv.cost.toFixed(4)}</span>
-                                                )}
-                                            </div>
+                                            {!isPublic && (
+                                                <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                                                    <span title="Input tokens">{conv.tokens_input} in</span>
+                                                    <span title="Output tokens">{conv.tokens_output} out</span>
+                                                    {conv.cost > 0 && (
+                                                        <span title="Cost">${conv.cost.toFixed(4)}</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {isPublic && (
+                                                <div className="flex items-center gap-3 mt-2 text-xs text-gray-400">
+                                                    {(() => {
+                                                        const msgs = parseMessages(conv);
+                                                        return msgs ? <span>{msgs.length} messages</span> : null;
+                                                    })()}
+                                                    {conv.visitor_email && (
+                                                        <span>{conv.visitor_email}</span>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -242,13 +330,31 @@ export default function ConversationsPage() {
                                 <>
                                     {/* Detail Header */}
                                     <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                                        <div>
-                                            <h2 className="font-semibold text-gray-800">Conversation Detail</h2>
-                                            <p className="text-xs text-gray-500 mt-0.5">
-                                                {new Date(selectedConversation.created_at).toLocaleString('en-AU')}
-                                            </p>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <h2 className="font-semibold text-gray-800 truncate">
+                                                    {isPublicChat(selectedConversation) && selectedConversation.visitor_name
+                                                        ? selectedConversation.visitor_name
+                                                        : 'Conversation Detail'}
+                                                </h2>
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-xs text-gray-500">
+                                                    {new Date(selectedConversation.created_at).toLocaleString('en-AU')}
+                                                </p>
+                                                {isPublicChat(selectedConversation) && selectedConversation.visitor_email && (
+                                                    <p className="text-xs text-gray-400">
+                                                        {selectedConversation.visitor_email}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            {isPublicChat(selectedConversation) && (
+                                                <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700">
+                                                    Public Chat
+                                                </span>
+                                            )}
                                             <span className={`text-xs px-2 py-1 rounded ${CIRCLE_COLORS[selectedConversation.circle]?.bg} ${CIRCLE_COLORS[selectedConversation.circle]?.text}`}>
                                                 {selectedConversation.circle} circle
                                             </span>
@@ -271,38 +377,38 @@ export default function ConversationsPage() {
 
                                     {/* Messages */}
                                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                        {/* User Message */}
-                                        <div className="flex justify-end">
-                                            <div className="max-w-[80%] bg-blue-500 text-white rounded-2xl rounded-tr-sm px-4 py-3">
-                                                <p className="text-sm whitespace-pre-wrap">{selectedConversation.user_message}</p>
-                                            </div>
-                                        </div>
-
-                                        {/* Kaksos Response */}
-                                        <div className="flex justify-start">
-                                            <div className="max-w-[80%] bg-gray-100 text-gray-800 rounded-2xl rounded-tl-sm px-4 py-3">
-                                                <p className="text-sm whitespace-pre-wrap">{selectedConversation.kaksos_response}</p>
-                                            </div>
-                                        </div>
+                                        {renderMessages(selectedConversation)}
                                     </div>
 
                                     {/* Stats Footer */}
                                     <div className="p-4 border-t border-gray-200 bg-gray-50">
                                         <div className="flex items-center justify-between text-xs text-gray-500">
                                             <div className="flex items-center gap-4">
-                                                <span>
-                                                    <strong>{selectedConversation.tokens_input}</strong> input tokens
-                                                </span>
-                                                <span>
-                                                    <strong>{selectedConversation.tokens_output}</strong> output tokens
-                                                </span>
-                                                {selectedConversation.duration_ms > 0 && (
-                                                    <span>
-                                                        <strong>{(selectedConversation.duration_ms / 1000).toFixed(2)}s</strong> response time
-                                                    </span>
+                                                {isPublicChat(selectedConversation) ? (
+                                                    <>
+                                                        {(() => {
+                                                            const msgs = parseMessages(selectedConversation);
+                                                            return msgs ? <span><strong>{msgs.length}</strong> messages</span> : null;
+                                                        })()}
+                                                        <span>via Public Chat</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span>
+                                                            <strong>{selectedConversation.tokens_input}</strong> input tokens
+                                                        </span>
+                                                        <span>
+                                                            <strong>{selectedConversation.tokens_output}</strong> output tokens
+                                                        </span>
+                                                        {selectedConversation.duration_ms > 0 && (
+                                                            <span>
+                                                                <strong>{(selectedConversation.duration_ms / 1000).toFixed(2)}s</strong> response time
+                                                            </span>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
-                                            {selectedConversation.cost > 0 && (
+                                            {!isPublicChat(selectedConversation) && selectedConversation.cost > 0 && (
                                                 <span className="font-medium">
                                                     ${selectedConversation.cost.toFixed(4)}
                                                 </span>

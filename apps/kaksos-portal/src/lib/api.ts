@@ -196,6 +196,11 @@ export interface Conversation {
     user_name?: string;
     user_email?: string;
     place_name?: string;
+    messages?: string | null;
+    title?: string | null;
+    visitor_name?: string | null;
+    visitor_email?: string | null;
+    source_type?: string | null;
 }
 
 export interface ConversationsResponse {
@@ -2029,6 +2034,39 @@ export const publicChatApi = {
         if (!response.ok) {
             const error = await response.json().catch(() => ({ error: 'Unknown error' }));
             return { success: false, error: error.error || `Chat failed: ${response.status}` };
+        }
+
+        return response.json();
+    },
+
+    /**
+     * Send conversation to the Kaksos owner for review
+     */
+    async sendConversation(params: {
+        bobyPlaceId: string;
+        sessionId: string;
+        visitorName: string;
+        visitorEmail?: string;
+        conversationHistory: PublicChatMessage[];
+    }): Promise<{ success: boolean; message?: string; conversationId?: string; error?: string }> {
+        const response = await fetch(`${KAKSOS_API_URL}/api/public/send-conversation`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                bobyPlaceId: params.bobyPlaceId,
+                sessionId: params.sessionId,
+                visitorName: params.visitorName,
+                visitorEmail: params.visitorEmail,
+                conversationHistory: params.conversationHistory.map(m => ({
+                    sender: m.sender,
+                    text: m.text,
+                })),
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+            return { success: false, error: error.error || `Send failed: ${response.status}` };
         }
 
         return response.json();
