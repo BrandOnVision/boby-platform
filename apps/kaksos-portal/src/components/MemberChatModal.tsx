@@ -108,6 +108,18 @@ export default function MemberChatModal({
         }
     }
 
+    async function handleClose() {
+        // Archive conversation on close if there are messages worth extracting
+        if (conversationId && messages.length >= 2) {
+            try {
+                await memberChatApi.archive({ bobyPlaceId, conversationId });
+            } catch (err) {
+                console.error('Archive error:', err);
+            }
+        }
+        onClose();
+    }
+
     if (!isOpen) return null;
 
     const circleColor = CIRCLE_COLORS[memberCircle] || CIRCLE_COLORS.public;
@@ -134,7 +146,7 @@ export default function MemberChatModal({
                         </div>
                     </div>
                     <button
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="p-2 text-gray-400 hover:text-gray-600 rounded flex-shrink-0"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

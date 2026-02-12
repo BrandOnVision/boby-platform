@@ -2097,4 +2097,26 @@ export const memberChatApi = {
 
         return response.json();
     },
+
+    /**
+     * Archive a training simulation conversation — extract Q&A seeds on modal close
+     */
+    async archive(params: { bobyPlaceId: string; conversationId: string }): Promise<{ success: boolean; seedCount?: number }> {
+        const token = getToken();
+        if (!token) throw new Error('Authentication required');
+
+        const user = getStoredUser();
+        const response = await fetch(`${KAKSOS_API_URL}/api/member-chat/archive`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'X-Boby-Place-Id': params.bobyPlaceId,
+                'X-User-Id': user?.id || '',
+            },
+            body: JSON.stringify({ conversationId: params.conversationId }),
+        });
+
+        return response.json();
+    },
 };
