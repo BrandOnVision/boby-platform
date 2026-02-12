@@ -350,7 +350,7 @@ export default function PublicChatPage() {
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    Sent to {kaksos.ownerName}
+                                    Message Sent
                                 </div>
                             ) : (
                                 <button
@@ -360,7 +360,7 @@ export default function PublicChatPage() {
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
-                                    Send to {kaksos.ownerName}
+                                    Send Message
                                 </button>
                             )}
                         </div>
@@ -397,10 +397,10 @@ export default function PublicChatPage() {
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
                         <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                            Send to {kaksos.ownerName}?
+                            Send Message?
                         </h2>
                         <p className="text-sm text-gray-600 mb-5">
-                            This conversation ({messages.length} messages) will be shared with {kaksos.ownerName} for their review.
+                            This conversation ({messages.length} messages) will be shared with the owner for their review.
                         </p>
 
                         <div className="space-y-4 mb-6">
@@ -426,7 +426,7 @@ export default function PublicChatPage() {
                                     autoFocus
                                 />
                                 <p className="text-xs text-gray-400 mt-1">
-                                    So {kaksos.ownerName} can reply to you directly
+                                    So the owner can reply to you directly
                                 </p>
                             </div>
                         </div>
