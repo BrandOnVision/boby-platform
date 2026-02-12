@@ -1344,7 +1344,9 @@ export interface NurturePendingSeedsResponse {
     }>;
     pendingCorrections: Array<{
         id: string;
+        suggested_question: string | null;
         suggested_answer: string;
+        suggested_circle: string | null;
         status: string;
         created_at: string;
         correction_text: string;

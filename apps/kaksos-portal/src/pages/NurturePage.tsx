@@ -518,6 +518,21 @@ export default function NurturePage() {
                                                 <p className="text-xs text-amber-800 font-medium line-clamp-1">{seed.question}</p>
                                             </button>
                                         ))}
+                                        {pendingSeeds.pendingCorrections.map(corr => (
+                                            <button
+                                                key={corr.id}
+                                                onClick={() => handleSeedClick({
+                                                    id: corr.id,
+                                                    question: corr.suggested_question || 'Correction pending',
+                                                    answer: corr.suggested_answer,
+                                                    circle_level: corr.suggested_circle || 'center',
+                                                    review_reason: corr.correction_text,
+                                                })}
+                                                className="w-full text-left p-2 bg-orange-50 border border-orange-100 rounded-lg hover:bg-orange-100 transition-colors"
+                                            >
+                                                <p className="text-xs text-orange-800 font-medium line-clamp-1">{corr.suggested_question || 'Correction pending'}</p>
+                                            </button>
+                                        ))}
                                     </div>
                                 ) : (
                                     <div className="flex items-center justify-center py-4">
@@ -786,13 +801,20 @@ export default function NurturePage() {
                                             </button>
                                         ))}
                                         {pendingSeeds.pendingCorrections.map(corr => (
-                                            <div
+                                            <button
                                                 key={corr.id}
-                                                className="p-3 bg-blue-50 border border-blue-100 rounded-lg"
+                                                onClick={() => handleSeedClick({
+                                                    id: corr.id,
+                                                    question: corr.suggested_question || 'Correction pending',
+                                                    answer: corr.suggested_answer,
+                                                    circle_level: corr.suggested_circle || 'center',
+                                                    review_reason: corr.correction_text,
+                                                })}
+                                                className="w-full text-left p-3 bg-orange-50 border border-orange-100 rounded-lg hover:bg-orange-100 transition-colors cursor-pointer"
                                             >
-                                                <p className="text-xs text-blue-800 font-medium">Correction pending</p>
-                                                <p className="text-xs text-blue-600 mt-1 line-clamp-2">{corr.suggested_answer}</p>
-                                            </div>
+                                                <p className="text-xs text-orange-800 font-medium line-clamp-1">{corr.suggested_question || 'Correction pending'}</p>
+                                                <p className="text-xs text-orange-600 mt-1 line-clamp-2">{corr.suggested_answer}</p>
+                                            </button>
                                         ))}
                                     </div>
                                 ) : (
