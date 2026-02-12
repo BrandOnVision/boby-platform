@@ -60,6 +60,8 @@ export default function CircleManagementPage() {
     const [showChatModal, setShowChatModal] = useState(false);
     const [memberToRemove, setMemberToRemove] = useState<CircleMember | null>(null);
     const [isRemoving, setIsRemoving] = useState(false);
+    const [editNotes, setEditNotes] = useState('');
+    const [isSavingNotes, setIsSavingNotes] = useState(false);
 
     // QR Scanner state
     const [showQrScanner, setShowQrScanner] = useState(false);
@@ -282,7 +284,26 @@ export default function CircleManagementPage() {
     // Open member detail modal (mobile)
     function openMemberDetail(member: CircleMember) {
         setSelectedMember(member);
+        setEditNotes(member.relationship_notes || '');
         setShowMemberModal(true);
+    }
+
+    // Save relationship notes on blur
+    async function handleSaveNotes() {
+        if (!selectedMember) return;
+        const trimmed = editNotes.trim();
+        if (trimmed === (selectedMember.relationship_notes || '')) return;
+        setIsSavingNotes(true);
+        try {
+            await circlesApi.updateMember(selectedMember.id, bobyPlaceId, { relationshipNotes: trimmed });
+            setSelectedMember(prev => prev ? { ...prev, relationship_notes: trimmed } : null);
+            // Update in the members list too
+            setMembers(prev => prev.map(m => m.id === selectedMember.id ? { ...m, relationship_notes: trimmed } : m));
+        } catch (err) {
+            console.error('Failed to save notes:', err);
+        } finally {
+            setIsSavingNotes(false);
+        }
     }
 
     // Get circle count for dropdown
@@ -875,12 +896,20 @@ export default function CircleManagementPage() {
                                     </code>
                                 </div>
 
-                                {/* Notes */}
+                                {/* Notes — editable, feeds Layer 0 circle awareness */}
                                 <div>
                                     <label className="text-xs font-semibold text-gray-500 uppercase">Relationship Notes</label>
-                                    <p className="mt-1 text-gray-600 text-sm">
-                                        {selectedMember.relationship_notes || 'No notes added'}
-                                    </p>
+                                    <textarea
+                                        value={editNotes}
+                                        onChange={(e) => setEditNotes(e.target.value)}
+                                        onBlur={handleSaveNotes}
+                                        placeholder="How do you know this person? These notes help Bonnard understand your relationships."
+                                        rows={3}
+                                        className="mt-1 w-full px-3 py-2 text-sm text-gray-700 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                                    />
+                                    {isSavingNotes && (
+                                        <p className="text-xs text-gray-400 mt-1">Saving...</p>
+                                    )}
                                 </div>
 
                                 {/* Change Circle */}
