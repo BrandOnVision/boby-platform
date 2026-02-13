@@ -178,7 +178,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     {/* Divider */}
                     <li className="pt-4 pb-2">
                         <span className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Growing Your Kaksos
+                            GetGrowing
                         </span>
                     </li>
 
@@ -217,7 +217,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     {/* External Links Divider */}
                     <li className="pt-4 pb-2">
                         <span className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Portals
+                            GetPortal
                         </span>
                     </li>
 
