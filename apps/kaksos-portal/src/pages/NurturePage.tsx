@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { nurtureApi, circlesApi, CircleLevel, NurtureChatResponse, NurtureStatsResponse, NurturePendingSeedsResponse } from '../lib/api';
+import { nurtureApi, circlesApi, CircleLevel, NurtureChatResponse, NurtureStatsResponse, NurturePendingSeedsResponse, KAKSOS_API_URL } from '../lib/api';
 import DashboardLayout from '../components/DashboardLayout';
 
 // Circle configuration
@@ -313,7 +313,7 @@ export default function NurturePage() {
         try {
             const token = localStorage.getItem('boby_kaksos_token');
             const circlesArray = Array.from(seedReviewCircles);
-            const response = await fetch(`https://kaksos.getboby.ai/api/nurture/seed/${selectedSeed.id}/approve`, {
+            const response = await fetch(`${KAKSOS_API_URL}/api/nurture/seed/${selectedSeed.id}/approve`, {
                 method: 'POST',
                 headers: {
                     'Authorization': token ? `Bearer ${token}` : '',
@@ -346,7 +346,7 @@ export default function NurturePage() {
         setSeedActionLoading(true);
         try {
             const token = localStorage.getItem('boby_kaksos_token');
-            const response = await fetch(`https://kaksos.getboby.ai/api/nurture/seed/${selectedSeed.id}/reject`, {
+            const response = await fetch(`${KAKSOS_API_URL}/api/nurture/seed/${selectedSeed.id}/reject`, {
                 method: 'POST',
                 headers: {
                     'Authorization': token ? `Bearer ${token}` : '',

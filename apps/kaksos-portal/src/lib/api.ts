@@ -1,14 +1,14 @@
 /**
  * Kaksos Portal API Configuration
  *
- * Connects to the existing Boby API server
- * Uses the Peeler First Protocol - all auth goes through /api/membership
+ * Auth goes through peelers-api (identity authority)
+ * All other API calls go through kaksos-api
  */
 
 /// <reference types="vite/client" />
 
 // API Configuration
-const API_BASE_URL = (import.meta.env?.VITE_API_URL as string) || 'https://api.getboby.ai';
+const AUTH_API_URL = (import.meta.env?.VITE_AUTH_API_URL as string) || 'https://peelers.getboby.ai';
 
 // Token storage keys
 const TOKEN_KEY = 'boby_kaksos_token';
@@ -86,7 +86,7 @@ export const authApi = {
         token: string;
         user: KaksosUser;
     }> {
-        const response = await fetch(`${API_BASE_URL}/api/membership/login`, {
+        const response = await fetch(`${AUTH_API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -94,15 +94,15 @@ export const authApi = {
 
         const data = await response.json();
 
-        if (data.code !== 200) {
-            throw new Error(data.message || 'Login failed');
+        if (!data.success) {
+            throw new Error(data.error || 'Login failed');
         }
 
-        const user = data.data.user;
+        const user = data.user;
 
         // Store token and user
-        if (data.data.token) {
-            setToken(data.data.token);
+        if (data.token) {
+            setToken(data.token);
             setStoredUser({
                 id: user.id,
                 email: user.email,
@@ -114,7 +114,7 @@ export const authApi = {
         }
 
         return {
-            token: data.data.token,
+            token: data.token,
             user: {
                 id: user.id,
                 email: user.email,
@@ -138,7 +138,7 @@ export const authApi = {
             throw new Error('No token');
         }
 
-        const response = await fetch(`${API_BASE_URL}/api/membership/verify`, {
+        const response = await fetch(`${AUTH_API_URL}/api/auth/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -147,12 +147,12 @@ export const authApi = {
 
         const data = await response.json();
 
-        if (data.code !== 200) {
+        if (!data.success) {
             handleTokenExpired();
-            throw new Error(data.message || 'Token invalid');
+            throw new Error(data.error || 'Token invalid');
         }
 
-        const user = data.data.user;
+        const user = data.user;
 
         const kaksosUser: KaksosUser = {
             id: user.id,
@@ -270,7 +270,7 @@ export interface ApiKeyTestResponse {
 // ============================================
 
 // Settings API uses kaksos.getboby.ai (routes to kaksos-api via Cloudflare Worker)
-const KAKSOS_API_URL = 'https://kaksos.getboby.ai';
+export const KAKSOS_API_URL = (import.meta.env?.VITE_KAKSOS_API_URL as string) || 'https://kaksos.getboby.ai';
 
 export const settingsApi = {
     /**
