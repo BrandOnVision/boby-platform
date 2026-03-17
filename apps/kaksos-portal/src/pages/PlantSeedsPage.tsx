@@ -26,7 +26,7 @@ function formatRelativeTime(dateString: string): string {
 
 export default function PlantSeedsPage() {
     const { user } = useAuth();
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     // Conversations list state
     const [conversations, setConversations] = useState<KmkyConversation[]>([]);

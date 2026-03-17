@@ -67,6 +67,7 @@ function handleTokenExpired(): void {
 
 export interface KaksosUser {
     id: string;
+    homeBobyPlaceId: string;
     email: string;
     firstName: string;
     lastName: string;
@@ -105,6 +106,7 @@ export const authApi = {
             setToken(data.token);
             setStoredUser({
                 id: user.id,
+                homeBobyPlaceId: user.homeBobyPlaceId || user.home_boby_place_id || user.id,
                 email: user.email,
                 firstName: user.first_name || user.firstName || 'User',
                 lastName: user.last_name || user.lastName || '',
@@ -117,6 +119,7 @@ export const authApi = {
             token: data.token,
             user: {
                 id: user.id,
+                homeBobyPlaceId: user.homeBobyPlaceId || user.home_boby_place_id || user.id,
                 email: user.email,
                 firstName: user.first_name || user.firstName || 'User',
                 lastName: user.last_name || user.lastName || '',
@@ -156,6 +159,7 @@ export const authApi = {
 
         const kaksosUser: KaksosUser = {
             id: user.id,
+            homeBobyPlaceId: user.homeBobyPlaceId || user.home_boby_place_id || user.id,
             email: user.email,
             firstName: user.first_name || user.firstName || 'User',
             lastName: user.last_name || user.lastName || '',

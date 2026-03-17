@@ -66,7 +66,7 @@ function isPublicChat(conv: Conversation): boolean {
 
 export default function ConversationsPage() {
     const { user } = useAuth();
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     // State
     const [conversations, setConversations] = useState<Conversation[]>([]);

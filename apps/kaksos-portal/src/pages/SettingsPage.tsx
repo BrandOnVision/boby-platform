@@ -60,7 +60,7 @@ export default function SettingsPage() {
     const [previewError, setPreviewError] = useState<string | null>(null);
 
     // Get the user's bobyPlaceId
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     // Fetch settings on mount
     useEffect(() => {

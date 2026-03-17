@@ -13,7 +13,7 @@ import { settingsApi } from '../lib/api';
 export default function DashboardPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     const [hasCompletedSetup, setHasCompletedSetup] = useState<boolean | null>(null);
     const [loading, setLoading] = useState(true);

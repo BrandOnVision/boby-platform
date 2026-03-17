@@ -57,7 +57,7 @@ interface ChatMessage {
 
 export default function NurturePage() {
     const { user } = useAuth();
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     // Circle perspective state
     const [selectedCircle, setSelectedCircle] = useState<CircleLevel>('center');

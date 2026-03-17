@@ -27,7 +27,7 @@ function getCircleConfig(level: CircleLevel) {
 
 export default function CircleManagementPage() {
     const { user } = useAuth();
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     // State
     const [members, setMembers] = useState<CircleMember[]>([]);

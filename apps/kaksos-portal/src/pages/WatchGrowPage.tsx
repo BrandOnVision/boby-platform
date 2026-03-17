@@ -29,7 +29,7 @@ const CIRCLE_LABELS: Record<string, string> = {
 
 export default function WatchGrowPage() {
     const { user } = useAuth();
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     // State
     const [seeds, setSeeds] = useState<WatchGrowSeed[]>([]);

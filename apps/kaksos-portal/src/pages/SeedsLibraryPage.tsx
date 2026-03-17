@@ -31,7 +31,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function SeedsLibraryPage() {
     const { user } = useAuth();
-    const bobyPlaceId = user?.id || '';
+    const bobyPlaceId = user?.homeBobyPlaceId || user?.id || '';
 
     // State
     const [questions, setQuestions] = useState<SeedQuestion[]>([]);
