@@ -43,6 +43,11 @@ export default function WatchGrowPage() {
     const [circleFilter, setCircleFilter] = useState<CircleLevel | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [showBoundary, setShowBoundary] = useState(false);
+    const [sortMode, setSortMode] = useState<'buoyancy' | 'newest' | 'oldest'>('buoyancy');
+
+    // Uproot modal state
+    const [showUprootConfirm, setShowUprootConfirm] = useState(false);
+    const [uprootTarget, setUprootTarget] = useState<WatchGrowSeed | null>(null);
 
     // Modal state
     const [showBoundaryPrompt, setShowBoundaryPrompt] = useState(false);
@@ -70,7 +75,7 @@ export default function WatchGrowPage() {
             setOffset(0);
             loadSeeds();
         }
-    }, [circleFilter, searchQuery, showBoundary]);
+    }, [circleFilter, searchQuery, showBoundary, sortMode]);
 
     async function loadStats() {
         try {
@@ -92,6 +97,7 @@ export default function WatchGrowPage() {
                 limit,
                 offset: newOffset,
                 includeBoundary: showBoundary,
+                sort: sortMode,
             });
 
             if (newOffset === 0) {
@@ -142,6 +148,26 @@ export default function WatchGrowPage() {
         } catch (err) {
             setErrorMessage(err instanceof Error ? err.message : 'Failed to update seed');
             setShowErrorAlert(true);
+        }
+    }
+
+    async function handleUproot(seed: WatchGrowSeed) {
+        setUprootTarget(seed);
+        setShowUprootConfirm(true);
+    }
+
+    async function executeUproot() {
+        if (!uprootTarget) return;
+        try {
+            await watchGrowApi.deleteSeed(bobyPlaceId, uprootTarget.id);
+            setSeeds(prev => prev.filter(s => s.id !== uprootTarget.id));
+            if (selectedSeed?.id === uprootTarget.id) setSelectedSeed(null);
+            loadStats();
+        } catch (err) {
+            setErrorMessage(err instanceof Error ? err.message : 'Failed to uproot seed');
+            setShowErrorAlert(true);
+        } finally {
+            setUprootTarget(null);
         }
     }
 
@@ -267,6 +293,22 @@ export default function WatchGrowPage() {
                                     />
                                     Show suppressed
                                 </label>
+
+                                <div className="flex items-center gap-1 border border-gray-200 rounded-lg p-0.5">
+                                    {(['buoyancy', 'newest', 'oldest'] as const).map(mode => (
+                                        <button
+                                            key={mode}
+                                            onClick={() => setSortMode(mode)}
+                                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                                                sortMode === mode
+                                                    ? 'bg-amber-100 text-amber-800'
+                                                    : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                        >
+                                            {mode === 'buoyancy' ? 'Buoyancy' : mode === 'newest' ? 'Newest' : 'Oldest'}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
@@ -315,8 +357,15 @@ export default function WatchGrowPage() {
                                                 {seed.answer}
                                             </p>
                                         </div>
-                                        <div className="text-xs text-gray-400 whitespace-nowrap">
-                                            {formatDate(seed.trained_at || seed.created_at)}
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            <div className="w-2 h-2 rounded-full" style={{
+                                                backgroundColor: parseFloat(seed.effective_buoyancy) >= 0.7 ? '#FFD952'
+                                                    : parseFloat(seed.effective_buoyancy) >= 0.3 ? '#F2C94C80'
+                                                    : '#D1D5DB'
+                                            }} title={`Buoyancy: ${seed.effective_buoyancy}`} />
+                                            <span className="text-xs text-gray-400 whitespace-nowrap">
+                                                {formatDate(seed.trained_at || seed.created_at)}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -505,6 +554,24 @@ export default function WatchGrowPage() {
                                                 : 'Suppress this seed without deleting it'}
                                         </p>
                                     </div>
+
+                                    {/* Uproot Button — only within 30-day maturity window */}
+                                    {selectedSeed.can_uproot && (
+                                        <div className="mt-3">
+                                            <button
+                                                onClick={() => handleUproot(selectedSeed)}
+                                                className="w-full py-2 px-4 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+                                            >
+                                                <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Uproot Seed ({selectedSeed.maturity_percent}% grown)
+                                            </button>
+                                            <p className="text-xs text-gray-400 mt-1 text-center">
+                                                Remove this seed permanently. Available until 30-day maturity.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="p-8 text-center text-gray-500">
@@ -551,6 +618,18 @@ export default function WatchGrowPage() {
                     if (boundaryTarget) executeBoundaryChange(boundaryTarget, true, reason || undefined);
                     setBoundaryTarget(null);
                 }}
+            />
+
+            {/* Uproot Confirm */}
+            <BobyModal
+                variant="confirm"
+                isOpen={showUprootConfirm}
+                onClose={() => { setShowUprootConfirm(false); setUprootTarget(null); }}
+                title="Uproot Seed"
+                message={`Permanently remove this seed? It is ${uprootTarget?.maturity_percent || 0}% grown. This cannot be undone.`}
+                confirmLabel="Uproot"
+                destructive
+                onConfirm={executeUproot}
             />
 
             {/* Error Alert */}

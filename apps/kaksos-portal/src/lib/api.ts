@@ -1433,6 +1433,10 @@ export interface WatchGrowSeed {
     created_at: string;
     trained_at: string | null;
     is_boundary: boolean;
+    effective_buoyancy: string;
+    raw_buoyancy: string;
+    maturity_percent: number;
+    can_uproot: boolean;
 }
 
 export interface WatchGrowSeedsResponse {
@@ -1461,6 +1465,11 @@ export interface WatchGrowStatsResponse {
             seedsAdded: number;
         }>;
         uniqueContributors: number;
+        buoyancyDepth: {
+            surface: number;
+            midDepth: number;
+            deep: number;
+        };
     };
 }
 
@@ -1621,6 +1630,7 @@ export const watchGrowApi = {
         limit?: number;
         offset?: number;
         includeBoundary?: boolean;
+        sort?: 'buoyancy' | 'newest' | 'oldest';
     }): Promise<WatchGrowSeedsResponse> {
         const token = getToken();
 
@@ -1637,6 +1647,9 @@ export const watchGrowApi = {
         }
         if (options?.includeBoundary) {
             params.append('includeBoundary', 'true');
+        }
+        if (options?.sort) {
+            params.append('sort', options.sort);
         }
 
         const response = await fetch(`${KAKSOS_API_URL}/api/watch-grow/seeds?${params}`, {
