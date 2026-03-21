@@ -389,8 +389,9 @@ export default function PlantSeedsPage() {
                     </div>
                 </div>
 
-                {/* Right Panel - Chat Area (desktop only — mobile uses overlay below) */}
-                <div className="hidden md:flex flex-1 flex-col bg-gray-50">
+                {/* Right Panel - Chat Area */}
+                {/* Full screen on mobile when conversation is selected */}
+                <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-gray-50`}>
                     {selectedConversation ? (
                         <>
                             {/* Chat Header */}
@@ -551,115 +552,6 @@ export default function PlantSeedsPage() {
                     )}
                 </div>
             </div>
-
-            {/* Mobile Chat Overlay — mirrors Nurture mobile pattern */}
-            {selectedConversation && (
-                <div className="md:hidden fixed inset-0 bg-white z-50 flex flex-col" style={{ height: '100dvh' }}>
-                    {/* Header */}
-                    <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-white">
-                        <button
-                            onClick={handleBackToList}
-                            className="p-2 -ml-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <div className="flex-1 min-w-0 mx-3">
-                            <h2 className="font-semibold text-gray-800 truncate">{selectedConversation.title}</h2>
-                            <p className="text-xs text-gray-500">{selectedConversation.message_count} messages</p>
-                        </div>
-                        <button
-                            onClick={handleArchive}
-                            disabled={isArchiving || messages.length < 2}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 text-sm font-medium rounded-lg hover:bg-green-100 transition-colors disabled:opacity-50"
-                        >
-                            {isArchiving ? (
-                                <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-                            ) : (
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                </svg>
-                            )}
-                            Plant Seeds
-                        </button>
-                    </div>
-
-                    {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                        {isLoadingConversation ? (
-                            <div className="flex items-center justify-center h-full">
-                                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                            </div>
-                        ) : messages.length === 0 ? (
-                            <div className="flex items-center justify-center h-full text-center">
-                                <div>
-                                    <p className="text-gray-500">Start the conversation</p>
-                                    <p className="text-sm text-gray-400 mt-1">Share something about yourself</p>
-                                </div>
-                            </div>
-                        ) : (
-                            messages.map(msg => (
-                                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-                                        msg.role === 'user'
-                                            ? 'bg-blue-500 text-white rounded-tr-sm'
-                                            : 'bg-white text-gray-800 rounded-tl-sm border border-gray-200'
-                                    }`}>
-                                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                        {isSending && (
-                            <div className="flex justify-start">
-                                <div className="bg-white text-gray-800 rounded-2xl rounded-tl-sm px-4 py-3 border border-gray-200">
-                                    <div className="flex gap-1">
-                                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Send Error */}
-                    {sendError && (
-                        <div className="flex-shrink-0 px-4 py-2 bg-red-50 text-red-600 text-sm">{sendError}</div>
-                    )}
-
-                    {/* Input */}
-                    <form onSubmit={handleSendMessage} className="flex-shrink-0 p-4 border-t border-gray-200 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-                        <div className="flex items-end gap-2">
-                            <textarea
-                                value={messageInput}
-                                onChange={(e) => setMessageInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault();
-                                        handleSendMessage(e);
-                                    }
-                                }}
-                                placeholder="Share something about yourself..."
-                                rows={1}
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary resize-none text-base"
-                                style={{ minHeight: '48px', maxHeight: '120px' }}
-                            />
-                            <button
-                                type="submit"
-                                disabled={!messageInput.trim() || isSending}
-                                className="p-3.5 bg-primary text-gray-800 rounded-xl hover:bg-primary-dark transition-colors disabled:opacity-50 flex-shrink-0"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                                </svg>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
         </DashboardLayout>
     );
 }
