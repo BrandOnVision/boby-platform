@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
+import BobyModal from '../components/BobyModal';
 import { useAuth } from '../context/AuthContext';
 import { watchGrowApi, WatchGrowSeed, WatchGrowStatsResponse, CircleLevel } from '../lib/api';
 
@@ -42,6 +43,12 @@ export default function WatchGrowPage() {
     const [circleFilter, setCircleFilter] = useState<CircleLevel | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [showBoundary, setShowBoundary] = useState(false);
+
+    // Modal state
+    const [showBoundaryPrompt, setShowBoundaryPrompt] = useState(false);
+    const [boundaryTarget, setBoundaryTarget] = useState<WatchGrowSeed | null>(null);
+    const [showErrorAlert, setShowErrorAlert] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Pagination
     const [offset, setOffset] = useState(0);
@@ -103,30 +110,38 @@ export default function WatchGrowPage() {
         }
     }
 
-    async function handleBoundaryToggle(seed: WatchGrowSeed) {
+    function handleBoundaryToggle(seed: WatchGrowSeed) {
         const newBoundary = !seed.is_boundary;
-        const reason = newBoundary
-            ? prompt('Why are you suppressing this seed? (optional)')
-            : undefined;
+        if (newBoundary) {
+            // Suppressing — ask for reason via prompt modal
+            setBoundaryTarget(seed);
+            setShowBoundaryPrompt(true);
+        } else {
+            // Restoring — execute directly
+            executeBoundaryChange(seed, false);
+        }
+    }
 
+    async function executeBoundaryChange(seed: WatchGrowSeed, isBoundary: boolean, reason?: string) {
         try {
-            await watchGrowApi.setBoundary(bobyPlaceId, seed.id, newBoundary, reason || undefined);
+            await watchGrowApi.setBoundary(bobyPlaceId, seed.id, isBoundary, reason);
 
             // Update local state
             setSeeds(prev =>
                 prev.map(s =>
-                    s.id === seed.id ? { ...s, is_boundary: newBoundary } : s
+                    s.id === seed.id ? { ...s, is_boundary: isBoundary } : s
                 )
             );
 
             if (selectedSeed?.id === seed.id) {
-                setSelectedSeed({ ...selectedSeed, is_boundary: newBoundary });
+                setSelectedSeed({ ...selectedSeed, is_boundary: isBoundary });
             }
 
             // Reload stats
             loadStats();
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to update seed');
+            setErrorMessage(err instanceof Error ? err.message : 'Failed to update seed');
+            setShowErrorAlert(true);
         }
     }
 
@@ -522,6 +537,30 @@ export default function WatchGrowPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Boundary Reason Prompt */}
+            <BobyModal
+                variant="prompt"
+                isOpen={showBoundaryPrompt}
+                onClose={() => { setShowBoundaryPrompt(false); setBoundaryTarget(null); }}
+                title="Suppress Seed"
+                message="Why are you suppressing this seed? (optional)"
+                placeholder="Reason for suppression..."
+                submitLabel="Suppress"
+                onSubmit={(reason) => {
+                    if (boundaryTarget) executeBoundaryChange(boundaryTarget, true, reason || undefined);
+                    setBoundaryTarget(null);
+                }}
+            />
+
+            {/* Error Alert */}
+            <BobyModal
+                variant="alert"
+                isOpen={showErrorAlert}
+                onClose={() => setShowErrorAlert(false)}
+                title="Error"
+                message={errorMessage}
+            />
         </DashboardLayout>
     );
 }

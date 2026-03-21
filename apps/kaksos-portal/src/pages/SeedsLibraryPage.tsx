@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/DashboardLayout';
+import BobyModal from '../components/BobyModal';
 import { useAuth } from '../context/AuthContext';
 import { seedsLibraryApi, SeedQuestion, SeedsLibraryStatsResponse } from '../lib/api';
 
@@ -48,6 +49,10 @@ export default function SeedsLibraryPage() {
     const [selectedQuestion, setSelectedQuestion] = useState<SeedQuestion | null>(null);
     const [answerText, setAnswerText] = useState('');
     const [saving, setSaving] = useState(false);
+
+    // Error alert state
+    const [showErrorAlert, setShowErrorAlert] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Load data
     useEffect(() => {
@@ -130,7 +135,8 @@ export default function SeedsLibraryPage() {
             setSelectedQuestion(null);
             setAnswerText('');
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to save answer');
+            setErrorMessage(err instanceof Error ? err.message : 'Failed to save answer');
+            setShowErrorAlert(true);
         } finally {
             setSaving(false);
         }
@@ -329,8 +335,8 @@ export default function SeedsLibraryPage() {
 
                 {/* Answer Modal */}
                 {selectedQuestion && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
                             <div className="p-6 border-b border-gray-200">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-lg font-semibold text-gray-400">
@@ -393,6 +399,15 @@ export default function SeedsLibraryPage() {
                     </div>
                 )}
             </div>
+
+            {/* Error Alert */}
+            <BobyModal
+                variant="alert"
+                isOpen={showErrorAlert}
+                onClose={() => setShowErrorAlert(false)}
+                title="Error"
+                message={errorMessage}
+            />
         </DashboardLayout>
     );
 }

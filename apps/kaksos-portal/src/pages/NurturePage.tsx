@@ -869,8 +869,8 @@ export default function NurturePage() {
 
             {/* Circle Selection Modal (Mobile) */}
             {showCircleModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-800">Select Circle</h3>
                             <button
@@ -919,8 +919,8 @@ export default function NurturePage() {
 
             {/* Member Selection Modal */}
             {showMemberModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-gray-800">
                                 Select {circleConfig.label} Member
@@ -1019,8 +1019,8 @@ export default function NurturePage() {
 
             {/* Seed Review Modal */}
             {showSeedReviewModal && selectedSeed && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-800">Review Seed</h3>
@@ -1141,8 +1141,8 @@ export default function NurturePage() {
 
             {/* Multi-Circle Approval Modal */}
             {showApprovalModal && lastQAPair && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
                         <div className="p-4 border-b border-gray-200">
                             <h3 className="text-lg font-semibold text-gray-800">
                                 {approvalType === 'good' ? 'Approve Memory' : approvalType === 'correct' ? 'Save Correction' : 'Set Boundary'}

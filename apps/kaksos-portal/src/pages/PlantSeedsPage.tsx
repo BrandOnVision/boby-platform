@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { kmkyApi, KmkyConversation, KmkyMessage, KmkyStatistics } from '../lib/api';
 import DashboardLayout from '../components/DashboardLayout';
+import BobyModal from '../components/BobyModal';
 
 // Format relative time
 function formatRelativeTime(dateString: string): string {
@@ -50,6 +51,14 @@ export default function PlantSeedsPage() {
     // Creating/archiving state
     const [isCreating, setIsCreating] = useState(false);
     const [isArchiving, setIsArchiving] = useState(false);
+
+    // Modal state
+    const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<KmkyConversation | null>(null);
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertTitle, setAlertTitle] = useState('');
+    const [alertMessage, setAlertMessage] = useState('');
 
     // Refs
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -203,12 +212,13 @@ export default function PlantSeedsPage() {
     }
 
     // Archive conversation (plant seeds)
-    async function handleArchive() {
+    function handleArchive() {
         if (!selectedConversation) return;
+        setShowArchiveConfirm(true);
+    }
 
-        if (!confirm('Plant this conversation as seeds? This will extract Q&A pairs for training.')) {
-            return;
-        }
+    async function executeArchive() {
+        if (!selectedConversation) return;
 
         setIsArchiving(true);
 
@@ -232,37 +242,47 @@ export default function PlantSeedsPage() {
                 });
             }
 
-            alert(`Planted ${response.qaCount} seeds from this conversation!`);
+            setAlertTitle('Seeds Planted');
+            setAlertMessage(`Planted ${response.qaCount} seeds from this conversation!`);
+            setShowAlert(true);
         } catch (err) {
             console.error('Failed to archive conversation:', err);
-            alert(err instanceof Error ? err.message : 'Failed to plant seeds');
+            setAlertTitle('Error');
+            setAlertMessage(err instanceof Error ? err.message : 'Failed to plant seeds');
+            setShowAlert(true);
         } finally {
             setIsArchiving(false);
         }
     }
 
     // Delete conversation
-    async function handleDelete(conv: KmkyConversation, e: React.MouseEvent) {
+    function handleDelete(conv: KmkyConversation, e: React.MouseEvent) {
         e.stopPropagation(); // Prevent selecting the conversation
+        setDeleteTarget(conv);
+        setShowDeleteConfirm(true);
+    }
 
-        if (!confirm(`Delete "${conv.title}"? This cannot be undone.`)) {
-            return;
-        }
+    async function executeDelete() {
+        if (!deleteTarget) return;
 
         try {
-            await kmkyApi.deleteConversation(conv.id, bobyPlaceId);
+            await kmkyApi.deleteConversation(deleteTarget.id, bobyPlaceId);
 
             // Remove from list
-            setConversations(prev => prev.filter(c => c.id !== conv.id));
+            setConversations(prev => prev.filter(c => c.id !== deleteTarget.id));
 
             // Clear selection if this was selected
-            if (selectedConversation?.id === conv.id) {
+            if (selectedConversation?.id === deleteTarget.id) {
                 setSelectedConversation(null);
                 setMessages([]);
             }
         } catch (err) {
             console.error('Failed to delete conversation:', err);
-            alert(err instanceof Error ? err.message : 'Failed to delete conversation');
+            setAlertTitle('Error');
+            setAlertMessage(err instanceof Error ? err.message : 'Failed to delete conversation');
+            setShowAlert(true);
+        } finally {
+            setDeleteTarget(null);
         }
     }
 
@@ -552,6 +572,38 @@ export default function PlantSeedsPage() {
                     )}
                 </div>
             </div>
+
+            {/* Archive Confirm */}
+            <BobyModal
+                variant="confirm"
+                isOpen={showArchiveConfirm}
+                onClose={() => setShowArchiveConfirm(false)}
+                title="Plant Seeds"
+                message="Plant this conversation as seeds? This will extract Q&A pairs for training."
+                confirmLabel="Plant Seeds"
+                onConfirm={executeArchive}
+            />
+
+            {/* Delete Confirm */}
+            <BobyModal
+                variant="confirm"
+                isOpen={showDeleteConfirm}
+                onClose={() => { setShowDeleteConfirm(false); setDeleteTarget(null); }}
+                title="Delete Conversation"
+                message={`Delete "${deleteTarget?.title}"? This cannot be undone.`}
+                confirmLabel="Delete"
+                destructive
+                onConfirm={executeDelete}
+            />
+
+            {/* Alert */}
+            <BobyModal
+                variant="alert"
+                isOpen={showAlert}
+                onClose={() => setShowAlert(false)}
+                title={alertTitle}
+                message={alertMessage}
+            />
         </DashboardLayout>
     );
 }

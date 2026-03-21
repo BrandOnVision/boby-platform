@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { settingsApi, KaksosSettings } from '../lib/api';
 import DashboardLayout from '../components/DashboardLayout';
 import SowingWizard from '../components/SowingWizard';
+import BobyModal from '../components/BobyModal';
 
 // Character limit for custom instructions
 const CUSTOM_INSTRUCTIONS_MAX = 8000;
@@ -52,6 +53,7 @@ export default function SettingsPage() {
 
     // Sowing Wizard modal state
     const [showSowingModal, setShowSowingModal] = useState(false);
+    const [showRemoveKeyConfirm, setShowRemoveKeyConfirm] = useState(false);
 
     // Preview testing state
     const [previewQuestion, setPreviewQuestion] = useState('Who are you and what do you do?');
@@ -196,11 +198,11 @@ export default function SettingsPage() {
     }
 
     // Handle remove API key
-    async function handleRemoveApiKey() {
-        if (!confirm('Are you sure you want to remove your API key? You will need to enter it again to use Kaksos.')) {
-            return;
-        }
+    function handleRemoveApiKey() {
+        setShowRemoveKeyConfirm(true);
+    }
 
+    async function executeRemoveApiKey() {
         setIsRemovingApiKey(true);
         setApiKeyMessage(null);
 
@@ -790,6 +792,18 @@ When responding:
                         setTimeout(() => setSuccessMessage(null), 5000);
                     }
                 }}
+            />
+
+            {/* Remove API Key Confirm */}
+            <BobyModal
+                variant="confirm"
+                isOpen={showRemoveKeyConfirm}
+                onClose={() => setShowRemoveKeyConfirm(false)}
+                title="Remove API Key"
+                message="Are you sure you want to remove your API key? You will need to enter it again to use Kaksos."
+                confirmLabel="Remove Key"
+                destructive
+                onConfirm={executeRemoveApiKey}
             />
         </DashboardLayout>
     );

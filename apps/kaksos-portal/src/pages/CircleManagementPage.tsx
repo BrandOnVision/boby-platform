@@ -9,7 +9,7 @@ import { circlesApi, CircleMember, CircleStats, CircleLevel } from '../lib/api';
 import DashboardLayout from '../components/DashboardLayout';
 import { Html5Qrcode } from 'html5-qrcode';
 import MemberChatModal from '../components/MemberChatModal';
-import ConfirmModal from '../components/ConfirmModal';
+import BobyModal from '../components/BobyModal';
 
 // Circle configuration
 const CIRCLES: { level: CircleLevel | 'all'; label: string; emoji: string; color: string; bgColor: string }[] = [
@@ -59,6 +59,10 @@ export default function CircleManagementPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [showChatModal, setShowChatModal] = useState(false);
     const [memberToRemove, setMemberToRemove] = useState<CircleMember | null>(null);
+
+    // Alert modal state
+    const [showErrorAlert, setShowErrorAlert] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [isRemoving, setIsRemoving] = useState(false);
     const [editNotes, setEditNotes] = useState('');
     const [isSavingNotes, setIsSavingNotes] = useState(false);
@@ -241,7 +245,8 @@ export default function CircleManagementPage() {
             setEditingMember(null);
         } catch (err) {
             console.error('Failed to update member:', err);
-            alert(err instanceof Error ? err.message : 'Failed to update member');
+            setErrorMessage(err instanceof Error ? err.message : 'Failed to update member');
+            setShowErrorAlert(true);
         } finally {
             setIsUpdating(false);
         }
@@ -595,8 +600,8 @@ export default function CircleManagementPage() {
 
                 {/* Add Member Modal */}
                 {showAddModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                                 <h2 className="text-lg font-semibold text-gray-800">Add Member to Circle</h2>
                                 <button
@@ -736,7 +741,7 @@ export default function CircleManagementPage() {
                 {/* QR Scanner Modal */}
                 {showQrScanner && (
                     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60]">
-                        <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                                 <h2 className="text-lg font-semibold text-gray-800">Scan TelePathCode</h2>
                                 <button
@@ -793,7 +798,7 @@ export default function CircleManagementPage() {
 
                 {/* Circle Selection Modal (Mobile) */}
                 {showCircleModal && (
-                    <div className="md:hidden fixed inset-0 bg-black/50 z-50 flex items-end">
+                    <div className="md:hidden fixed inset-0 bg-black/70 z-50 flex items-end">
                         <div
                             className="bg-white w-full rounded-t-2xl max-h-[70vh] overflow-hidden"
                             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -845,7 +850,7 @@ export default function CircleManagementPage() {
 
                 {/* Member Detail Modal */}
                 {showMemberModal && selectedMember && (
-                    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
                         <div className="bg-white w-full max-w-md rounded-2xl max-h-[90vh] overflow-hidden flex flex-col">
                             {/* Header */}
                             <div className="flex-shrink-0 p-4 border-b border-gray-100 flex items-center justify-between">
@@ -973,15 +978,24 @@ export default function CircleManagementPage() {
                 )}
 
                 {/* Remove Member Confirm Modal */}
-                <ConfirmModal
+                <BobyModal
+                    variant="confirm"
                     isOpen={!!memberToRemove}
+                    onClose={() => setMemberToRemove(null)}
                     title="Remove Member"
                     message={`Remove ${memberToRemove?.peeler_name || memberToRemove?.peeler_id || ''} from your circles? This cannot be undone.`}
                     confirmLabel="Remove"
-                    confirmVariant="danger"
+                    destructive
                     onConfirm={handleRemoveMember}
-                    onCancel={() => setMemberToRemove(null)}
-                    isLoading={isRemoving}
+                />
+
+                {/* Error Alert */}
+                <BobyModal
+                    variant="alert"
+                    isOpen={showErrorAlert}
+                    onClose={() => setShowErrorAlert(false)}
+                    title="Error"
+                    message={errorMessage}
                 />
 
                 {/* Member Chat Modal */}
