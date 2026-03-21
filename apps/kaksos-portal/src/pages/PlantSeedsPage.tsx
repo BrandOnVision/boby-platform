@@ -274,7 +274,7 @@ export default function PlantSeedsPage() {
 
     return (
         <DashboardLayout>
-            <div className="h-[calc(100vh-3.5rem)] md:h-full flex flex-col md:flex-row max-w-full overflow-hidden">
+            <div className="h-[calc(100dvh-3.5rem)] md:h-full flex flex-col md:flex-row max-w-full overflow-hidden">
                 {/* Left Panel - Conversations List */}
                 {/* Hidden on mobile when conversation is selected */}
                 <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-shrink-0 border-r border-gray-200 flex-col bg-white`}>
@@ -395,7 +395,7 @@ export default function PlantSeedsPage() {
                     {selectedConversation ? (
                         <>
                             {/* Chat Header */}
-                            <div className="px-4 md:px-6 py-3 md:py-4 bg-white border-b border-gray-200 flex items-center justify-between gap-3">
+                            <div className="flex-shrink-0 px-4 md:px-6 py-3 md:py-4 bg-white border-b border-gray-200 flex items-center justify-between gap-3">
                                 {/* Back button - mobile only */}
                                 <button
                                     onClick={handleBackToList}
@@ -491,7 +491,7 @@ export default function PlantSeedsPage() {
                             )}
 
                             {/* Message Input */}
-                            <form onSubmit={handleSendMessage} className="p-3 md:p-4 bg-white border-t border-gray-200 safe-area-bottom">
+                            <form onSubmit={handleSendMessage} className="flex-shrink-0 p-3 md:p-4 bg-white border-t border-gray-200 safe-area-bottom">
                                 <div className="flex items-end gap-2 md:gap-3">
                                     <textarea
                                         value={messageInput}
